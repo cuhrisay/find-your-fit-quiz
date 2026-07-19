@@ -1,0 +1,12 @@
+{
+  "name": "cya-find-your-fit-quiz",
+  "version": "1.0.0",
+  "description": "Vercel functions powering the Cushion Your Assets 'Find Your Fit' quiz: Tally webhook -> deterministic routing -> Groq message -> Airtable log -> Mailchimp email.",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node lib/routing.test.js"
+  }
+}

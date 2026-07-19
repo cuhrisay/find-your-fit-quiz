@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Find Your Fit Results — Cushion Your Assets</title>
+<style>
+  /* Brand colors from the CYA blog/email guide: red #C82613, yellow #FFC700,
+     dark #2C2C2C, off-white #F4F3F1, Poppins font */
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #F4F3F1;
+    color: #2C2C2C;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    background: #ffffff;
+    max-width: 560px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 4px;
+    border: 1px solid #e8e8e8;
+  }
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .spec-table {
+    margin: 24px 0;
+    border-top: 1px solid #eee;
+  }
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+  }
+  .spec-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+  }
+  .spec-value {
+    font-weight: 500;
+  }
+  .message {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 24px 0;
+  }
+  .cta {
+    display: inline-block;
+    background: #C82613;
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 28px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 8px;
+  }
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+  }
+  .error {
+    color: #C82613;
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="loading" id="loading">Finding your fit…</div>
+  </div>
+
+  <script>
+    // ACTION NEEDED: set this to your actual deployed Vercel domain, or leave
+    // as a relative path if this page is served from the same domain as the
+    // API functions (recommended - simplest setup).
+    const RESULT_ENDPOINT = '/api/quiz-result';
+
+    // Tally's redirect URL should be set to something like:
+    //   https://yourdomain.vercel.app/results.html?id=@SubmissionID
+    // (use Tally's "@" merge syntax in the redirect URL field to insert the
+    // real submission ID - see Tally's Redirect on Completion settings)
+    const params = new URLSearchParams(window.location.search);
+    const submissionId = params.get('id');
+
+    const card = document.getElementById('card');
+
+    function renderResult(data) {
+      const r = data.result;
+      let secondCushionHtml = '';
+      if (r.secondCushion && r.secondCushion.suggestion) {
+        secondCushionHtml = `
+          <div class="spec-row">
+            <span class="spec-label">Also consider</span>
+            <span class="spec-value">${r.secondCushion.suggestion.thickness} (${r.secondCushion.note})</span>
+          </div>`;
+      }
+      card.innerHTML = `
+        <h1>Here's Your Fit</h1>
+        <div class="spec-table">
+          <div class="spec-row">
+            <span class="spec-label">Product</span>
+            <span class="spec-value">${r.product}</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Firmness</span>
+            <span class="spec-value">${r.firmness}</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Size</span>
+            <span class="spec-value">${r.size}</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">Thickness</span>
+            <span class="spec-value">${r.thickness}</span>
+          </div>
+          ${secondCushionHtml}
+        </div>
+        <div class="message">${data.message}</div>
+        <a class="cta" href="https://cushionyourassets.com/shop">Shop Your Fit</a>
+      `;
+    }
+
+    function renderError(msg) {
+      card.innerHTML = `<div class="loading error">${msg}</div>`;
+    }
+
+    async function poll() {
+      if (!submissionId) {
+        renderError(
+          "We couldn't find your submission. Please try the quiz again, or email us at support@cushionyourassets.com."
+        );
+        return;
+      }
+      try {
+        const res = await fetch(`${RESULT_ENDPOINT}?id=${encodeURIComponent(submissionId)}`);
+        const data = await res.json();
+        if (data.status === 'ready') {
+          renderResult(data);
+        } else if (data.status === 'pending') {
+          setTimeout(poll, 1500);
+        } else {
+          renderError(
+            "Something went wrong finding your result. We've also emailed a copy — check your inbox, or email us at support@cushionyourassets.com."
+          );
+        }
+      } catch (err) {
+        renderError(
+          "Something went wrong loading your result. Check your email for a copy, or reach out at support@cushionyourassets.com."
+        );
+      }
+    }
+
+    // Give the webhook a head start before the first poll, since it hasn't
+    // even been triggered until roughly the moment this page loads.
+    setTimeout(poll, 800);
+
+    // Stop polling forever if something's badly wrong - cap at ~30 seconds.
+    setTimeout(() => {
+      if (card.innerHTML.includes('Finding your fit')) {
+        renderError(
+          "This is taking longer than expected. We've emailed your result — check your inbox, or reach out at support@cushionyourassets.com."
+        );
+      }
+    }, 30000);
+  </script>
+</body>
+</html>
