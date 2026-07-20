@@ -32,11 +32,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // TEMPORARY - remove once lib/parseTally.js's FIELD_MAP is filled in with real
-  // Tally field IDs. Logs the raw payload so the IDs can be read from Vercel's
-  // function logs instead of a separate capture tool.
-  console.log('RAW TALLY PAYLOAD:', JSON.stringify(req.body, null, 2));
-
   // Tally sends the submission ID at payload.data.submissionId (varies slightly
   // by Tally's webhook version - check a real test payload and adjust if needed).
   const submissionId =
