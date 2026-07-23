@@ -16,7 +16,18 @@
     margin: 0;
     padding: 40px 20px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .page {
+    max-width: 560px;
+    width: 100%;
+  }
+  .site-logo {
+    display: block;
+    height: 64px;
+    width: auto;
+    margin: 0 auto 24px;
   }
   .card {
     background: #ffffff;
@@ -97,11 +108,48 @@
   .error {
     color: #C82613;
   }
+  .site-footer {
+    max-width: 560px;
+    width: 100%;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e0dfdb;
+    text-align: center;
+    color: #7a7a7a;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .site-footer img {
+    display: block;
+    height: 28px;
+    width: auto;
+    margin: 0 auto 12px;
+    opacity: 0.85;
+  }
+  .site-footer a {
+    color: #7a7a7a;
+    text-decoration: underline;
+  }
+  .site-footer .tagline {
+    margin: 0 0 4px;
+  }
 </style>
 </head>
 <body>
-  <div class="card" id="card">
-    <div class="loading" id="loading">Finding your fit…</div>
+  <div class="page">
+    <img class="site-logo" alt="Cushion Your Assets" src="https://images.squarespace-cdn.com/content/v1/68e81b678021d5189cf1f247/9d1b0cf7-2a18-4d5c-8624-43fd49dbd83a/Cushion+Your+Assets+Pelvic+Pain+Cushion+Logo+with+Clouds.jpg?format=500w" />
+    <div class="card" id="card">
+      <div class="loading" id="loading">Finding your fit…</div>
+    </div>
+    <div class="site-footer">
+      <img alt="Cushion Your Assets" src="https://images.squarespace-cdn.com/content/v1/68e81b678021d5189cf1f247/9d1b0cf7-2a18-4d5c-8624-43fd49dbd83a/Cushion+Your+Assets+Pelvic+Pain+Cushion+Logo+with+Clouds.jpg?format=200w" />
+      <p class="tagline">Cushion Your Assets — the patented pelvic pain relief cushion.</p>
+      <p>
+        Questions about your fit? Email <a href="mailto:support@cushionyourassets.com">support@cushionyourassets.com</a>
+        or visit <a href="https://cushionyourassets.com">cushionyourassets.com</a>.
+      </p>
+      <p>&copy; 2026 Cushion Your Assets. All rights reserved.</p>
+    </div>
   </div>
 
   <script>
