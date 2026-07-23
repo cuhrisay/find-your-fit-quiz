@@ -23,7 +23,12 @@
 const { parseTallyPayload } = require('../lib/parseTally');
 const { routeCushion } = require('../lib/routing');
 const { generateResultMessage } = require('../lib/groq');
-const { composeResultMessage, composeFallbackMessage } = require('../lib/composeMessage');
+const {
+  composeResultMessage,
+  composeFallbackMessage,
+  composeEmailSummary,
+  composeFallbackEmailSummary,
+} = require('../lib/composeMessage');
 const { logSubmission } = require('../lib/airtable');
 const { pushToMailchimp } = require('../lib/mailchimp');
 
@@ -68,18 +73,23 @@ module.exports = async (req, res) => {
   }
 
   let aiMessage;
+  let emailSummary;
   try {
     const groqResult = await generateResultMessage(routedResult, answers);
     aiMessage = composeResultMessage(routedResult, groqResult);
+    emailSummary = composeEmailSummary(groqResult);
   } catch (err) {
     // Groq failing shouldn't mean the person gets nothing - fall back to a
     // plain, honest message built from the fixed always-include copy so the
     // page still shows something useful.
     console.error('Groq call failed, using fallback message:', err);
     aiMessage = composeFallbackMessage(routedResult);
+    emailSummary = composeFallbackEmailSummary(routedResult);
   }
 
-  // Non-fatal: log failures but don't block the response.
+  // Non-fatal: log failures but don't block the response. Airtable/the results
+  // page get the full aiMessage; Mailchimp gets the short emailSummary since
+  // its merge field caps out around 255 characters (see composeMessage.js).
   try {
     await logSubmission(answers, routedResult, aiMessage, submissionId);
   } catch (err) {
@@ -88,7 +98,7 @@ module.exports = async (req, res) => {
 
   try {
     if (answers.email) {
-      await pushToMailchimp(answers, routedResult, aiMessage);
+      await pushToMailchimp(answers, routedResult, emailSummary);
     }
   } catch (err) {
     console.error('Mailchimp push failed (non-fatal):', err);

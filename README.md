@@ -53,6 +53,12 @@ part silently wouldn't work and only the email would arrive.
    cap), `AIMSG`. Build an automation triggered by the `quiz-results` tag that
    sends the result email using those merge fields. Get your API key, server
    prefix (the part after the dash), and audience ID for `.env.local`.
+   **`AIMSG` is a short plain-text teaser only** (Mailchimp's "text" merge
+   fields cap out around 255 characters - a hard platform limit) — the full
+   formatted message with headings/links only lives on the results page. Add
+   the "For More Support" section (guide/blog/provider-directory/support
+   email) as **static content directly in the email template itself**, not
+   through a merge field, since it's identical on every send anyway.
 
 3. **Groq** — free account at console.groq.com, generate an API key.
 
