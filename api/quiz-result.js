@@ -15,6 +15,7 @@
  */
 
 const { findSubmissionById } = require('../lib/airtable');
+const { getOrderLink } = require('../lib/productLinks');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -43,6 +44,8 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const orderLink = getOrderLink(record['Routed Product']);
+
   res.status(200).json({
     status: 'ready',
     result: {
@@ -53,6 +56,8 @@ module.exports = async (req, res) => {
       secondCushion: record['Second Cushion']
         ? JSON.parse(record['Second Cushion'])
         : null,
+      orderUrl: orderLink.url,
+      orderLabel: orderLink.label,
     },
     message: record['AI Message'],
   });

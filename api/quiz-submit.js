@@ -23,6 +23,7 @@
 const { parseTallyPayload } = require('../lib/parseTally');
 const { routeCushion } = require('../lib/routing');
 const { generateResultMessage } = require('../lib/groq');
+const { composeResultMessage, composeFallbackMessage } = require('../lib/composeMessage');
 const { logSubmission } = require('../lib/airtable');
 const { pushToMailchimp } = require('../lib/mailchimp');
 
@@ -31,10 +32,6 @@ module.exports = async (req, res) => {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
-
-  // TEMPORARY - remove once the "Something else" diagnoses elaboration field's
-  // key is captured and added to parseTally.js.
-  console.log('RAW TALLY PAYLOAD:', JSON.stringify(req.body, null, 2));
 
   // Tally sends the submission ID at payload.data.submissionId (varies slightly
   // by Tally's webhook version - check a real test payload and adjust if needed).
@@ -72,17 +69,14 @@ module.exports = async (req, res) => {
 
   let aiMessage;
   try {
-    aiMessage = await generateResultMessage(routedResult, answers);
+    const groqResult = await generateResultMessage(routedResult, answers);
+    aiMessage = composeResultMessage(routedResult, groqResult);
   } catch (err) {
     // Groq failing shouldn't mean the person gets nothing - fall back to a
     // plain, honest message built from the fixed always-include copy so the
     // page still shows something useful.
     console.error('Groq call failed, using fallback message:', err);
-    aiMessage =
-      `Based on what you told us, we'd recommend the ${routedResult.product}, ` +
-      `${routedResult.firmness} firmness, ${routedResult.size}, ${routedResult.thickness}. ` +
-      `${routedResult.alwaysInclude.breakIn} ${routedResult.alwaysInclude.returnPolicy} ` +
-      `If you'd like to talk it through, reach out any time.`;
+    aiMessage = composeFallbackMessage(routedResult);
   }
 
   // Non-fatal: log failures but don't block the response.

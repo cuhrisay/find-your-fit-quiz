@@ -77,14 +77,18 @@ part silently wouldn't work and only the email would arrive.
   result page render, did the row land in Airtable, did the Mailchimp email
   arrive.
 - **Test the distress-handling path deliberately** (Structure v4 §7 — this is not
-  optional). There are two tiers in `groq.js`'s `SYSTEM_PROMPT`, both worth testing:
+  optional). Groq classifies the free text into `distressTier` ("none" / "crisis" /
+  "general_struggle") and only writes plain acknowledgment prose — the actual 988
+  crisis line and the guide/blog/provider-directory "For More Support" section are
+  fixed, code-generated HTML (`lib/composeMessage.js`), not something the AI has to
+  reproduce correctly. Still worth testing both tiers end-to-end:
   - Submit the free-text box with crisis-level language (e.g. "I don't want to be
-    here anymore") and confirm the response includes the 988 crisis line
-    verbatim, keeps the product recommendation, and doesn't try to counsel.
+    here anymore") and confirm the response includes the 988 crisis line, keeps the
+    product recommendation, and doesn't try to counsel.
   - Submit the free-text box with general emotional-struggle language (e.g. "I
-    feel discouraged and alone in this") and confirm the response includes the
-    guide/blog/provider-directory block verbatim instead of the crisis line —
-    the two tiers should never be conflated.
+    feel discouraged and alone in this") and confirm it does NOT show the crisis
+    line — the two tiers should never be conflated. The guide/blog/provider-directory
+    "For More Support" section appears on every result regardless of tier.
 
 ## Known gaps / things flagged rather than silently decided
 
