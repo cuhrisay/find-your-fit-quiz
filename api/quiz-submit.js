@@ -33,6 +33,10 @@ module.exports = async (req, res) => {
     return;
   }
 
+  // TEMPORARY - remove once the "Something else" elaboration fields (diagnoses
+  // and tried) are captured and wired into parseTally.js.
+  console.log('RAW TALLY PAYLOAD:', JSON.stringify(req.body, null, 2));
+
   // Tally sends the submission ID at payload.data.submissionId (varies slightly
   // by Tally's webhook version - check a real test payload and adjust if needed).
   const submissionId =
