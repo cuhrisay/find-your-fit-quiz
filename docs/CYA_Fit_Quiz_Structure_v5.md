@@ -116,10 +116,32 @@ adds confusion).
 | Trigger | Result |
 |---|---|
 | Default (including car at regular/short height) | Regular 2" |
-| Travels often / needs compact | Low Profile 1.5" — bump firmness one band (capped at Firm; LP only exists in Medium/Medium Plus/Firm). Soft-preference tradeoff flagged. Band outside LP's range → stay Regular with the "wouldn't hold up" note. |
-| Tall (5'11"+) + car | Low Profile 1.5" (with the same bump) |
+| Travels often / needs compact | Low Profile 1.5" — **same firmness as Regular, no bump** (confirmed by Trudy directly, July 2026 — see note below). LP only exists in Medium/Medium Plus/Firm. Soft-preference tradeoff flagged (less depth = less give, regardless of firmness label). Band outside LP's range → stay Regular with the "wouldn't hold up" note. |
+| Tall (5'11"+) + car | Low Profile 1.5" (same firmness, no bump) |
 | Short (5'2"−) + car | Regular + booster-cushion note |
 | Hard-seat pain + wants compact | **Regular** — support need beats compactness want; Low Profile never mentioned |
+| Size is 18" | Low Profile is **never** available regardless of firmness/travel — 18" only comes in Regular or Extra Cush 3" (confirmed by Trudy). Falls back to Regular with its own note; a Low Profile 16" is offered as a second-cushion companion for the road when travel is also a stated need. |
+
+**Why no bump (Trudy, July 2026, resolving an apparent contradiction with the
+call):** on the call she said going shorter needs going firmer for the same
+support; asked directly with a concrete example ("Medium Plus Regular — Firm
+Low Profile?") she said "the same as the regular cushion." Both are true
+because they're describing different things — **thickness** (how much foam
+there is to compress into) is what produces perceived softness/give;
+**firmness rating** is what prevents bottoming out. Low Profile has less
+depth, so it inherently gives less regardless of its firmness label — it
+doesn't need a firmer label to compensate, it just has less cushioning. This
+is also why Extra Cush is a soft top layer over an *Extra Firm* base (depth
+for give, firmness for support), and why hard-seat-pain sufferers stay on
+Regular instead of Low Profile — they need depth, not a firmness adjustment.
+
+**Deliberately not implemented:** Trudy also said "a Low Profile Firm may
+still work as an Extra Firm" for people under (not over) 220 lbs who'd
+otherwise need Extra Firm — a hedged substitute at Low Profile's firmness
+ceiling. Given the hedge ("may") and that this is exactly the weight range
+most likely to bottom out, the code keeps routing these people to Regular
+Extra Firm rather than offering the uncertain Low Profile substitute. Worth
+knowing about, not worth the added complexity.
 
 ### Size
 | Trigger | Result |
@@ -129,7 +151,9 @@ adds confusion).
 
 ### Second cushion — only when uses genuinely oppose
 - 18" + wheelchair + travel → no pairing (the wheelchair travels with them); note only.
-- 18" + recliner + travel → Low Profile pairing suggested if their band allows it.
+- 18" + travel (recliner, or no particular stay-put context) → Low Profile 16"
+  pairing suggested if their band allows it — since 18" never comes in Low
+  Profile, this is the only way to serve the travel need at all.
 - Extra Cush also-consider (table above).
 - Everything else → one cushion, no also-consider. One confident answer is the default.
 
@@ -152,23 +176,40 @@ general_struggle / crisis and writes only a one-sentence acknowledgment; the
 `composeMessage.js`. The two tiers must never be conflated. Test both
 deliberately before launch.
 
-## 7. Still open — awaiting Trudy
-1. **Extra Cush reasoning** — the "soft top needs the Extra Firm base
-   underneath" rationale is Chrisie's confident assumption from the call +
-   the shop's variant list; confirm with Trudy.
-2. **Product-page weight copy** — the site says "Firm 170–200, Extra Firm
-   200+" while Trudy's call guidance (and this routing) says Firm covers up
-   to 220 with preference nuance. Chrisie believes the site's overlapping
-   ranges are Trudy's accumulated preference-nuance. Once Trudy confirms,
-   update the site copy (or this table) so the quiz and product page agree —
-   a customer seeing both should never get two different answers.
-3. **Custom-cutout history** — check the real inbox history (cya-inbox-research)
+## 7. Resolved by Trudy, July 2026 (written follow-up after the call)
+
+1. **Weight/firmness table** — asked to reconcile the quiz's numbers with the
+   site's, Trudy said to leave the site as-is ("we should probably leave it
+   the same as the brochure"). Read as: the site's overlapping bands (e.g.
+   Medium Plus 130–180, Firm 170–200) are the intentionally loose
+   customer-facing display; the quiz's firmness-preference question is
+   exactly "how to know when to go up or down" within that overlap. No code
+   change — the routing table already does this. The old open item about the
+   201–220 lb / Extra Firm mismatch is resolved this way, not by changing the
+   number.
+2. **Extra Cush is Extra Firm only** — confirmed directly ("The 3" is only
+   Extra Firm, Extra Cush"). She'd like a 2.5" Firm Extra Cush eventually —
+   noted for the product roadmap, not the current quiz.
+3. **Low Profile's real use case** — confirmed: travel, very tall/short
+   people, long drives/flights, or people who can't tolerate firmness (who
+   need more *depth*, i.e. Regular or Extra Cush, not a thinner cushion).
+   Matches the existing hard-seat-pain-stays-on-Regular rule.
+4. **Low Profile firmness: no bump** — see the Thickness table above. Directly
+   confirmed with a concrete example; this reverses a rule that was
+   previously (and reasonably) built from the call transcript.
+5. **18" never comes in Low Profile** — "18 is made in regular and 3\" but
+   not low profile." Now enforced as a hard availability constraint (see
+   Thickness table).
+
+## 8. Still open — awaiting Trudy
+
+1. **Custom-cutout history** — check the real inbox history (cya-inbox-research)
    before permanently locking "never a first purchase."
-4. **Product-page consolidation** — fold Low Profile and 18" into the Twin
+2. **Product-page consolidation** — fold Low Profile and 18" into the Twin
    Cheeks page as variants (planned; the quiz's two order links — Twin Cheeks
    and Simple Soother — assume this happens before launch). While doing it,
    align variant names with quiz output: the quiz says "Extra Cush 3\"", the
    shop dropdown says "Extra Firm Cushy 3\"" — pick one.
-5. **Phone number** — after launch, replace call/contact prompts on product
+3. **Phone number** — after launch, replace call/contact prompts on product
    pages with the Find Your Fit quiz link; keep the number on the contact
    page only.
