@@ -8,7 +8,7 @@
   /* Brand colors from the CYA blog/email guide: red #C82613, yellow #FFC700,
      dark #2C2C2C, off-white #F4F3F1, Poppins font */
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@700&display=swap');
 
   body {
     font-family: 'Poppins', sans-serif;
@@ -41,20 +41,21 @@
   .brand-mark {
     text-align: center;
     margin: 0 auto 28px;
+    white-space: nowrap;
   }
-  .brand-mark .cushion {
-    display: block;
-    font-size: 36px;
-    font-weight: 600;
-    color: #C82613;
+  .brand-mark .cushion,
+  .brand-mark .your-assets {
+    font-family: 'Epilogue', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
     letter-spacing: 0.01em;
   }
+  .brand-mark .cushion {
+    color: #C82613;
+  }
   .brand-mark .your-assets {
-    display: block;
-    font-size: 18px;
-    font-weight: 500;
     color: #2C2C2C;
-    margin-top: -2px;
+    margin-left: 8px;
   }
   .card {
     background: #ffffff;
@@ -96,7 +97,6 @@
     margin: 24px 0;
   }
   .message h3 {
-    font-family: 'Epilogue', sans-serif;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
