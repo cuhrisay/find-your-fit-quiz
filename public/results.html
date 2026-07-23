@@ -69,6 +69,13 @@
   .message p {
     margin: 0 0 14px;
   }
+  .message ul {
+    margin: 0 0 14px;
+    padding-left: 20px;
+  }
+  .message li {
+    margin: 0 0 8px;
+  }
   .message a {
     color: #C82613;
   }
@@ -116,10 +123,12 @@
       const r = data.result;
       let secondCushionHtml = '';
       if (r.secondCushion && r.secondCushion.suggestion) {
+        const s = r.secondCushion.suggestion;
+        const valueText = s.firmnessRange ? `${s.thickness} — ${s.firmnessRange}` : s.thickness;
         secondCushionHtml = `
           <div class="spec-row">
             <span class="spec-label">Also consider</span>
-            <span class="spec-value">${r.secondCushion.suggestion.thickness} (${r.secondCushion.note})</span>
+            <span class="spec-value">${valueText}</span>
           </div>`;
       }
       card.innerHTML = `
