@@ -6,29 +6,26 @@
  * Flow per submission:
  *   1. Parse the raw Tally payload into normalized answers.
  *   2. Run the deterministic routing table (routing.js) -> product/firmness/etc.
- *   3. Call Groq to write the human-facing explanation (groq.js).
- *   4. Log everything to Airtable (airtable.js) - this doubles as the short-term
+ *   3. ONLY if the free-text box has content: call Groq for the one personal
+ *      paragraph + distress classification (groq.js). Empty box -> no AI call
+ *      at all; the message is fully deterministic.
+ *   4. Compose the final message from fixed templates (composeMessage.js).
+ *   5. Log everything to Airtable (airtable.js) - this doubles as the short-term
  *      "result lookup" store that api/quiz-result.js polls, AND the permanent
- *      data log described in Structure v4 §6.
- *   5. Push the result to Mailchimp (mailchimp.js) so the existing automation
+ *      data log described in Structure v5 §5.
+ *   6. Push the result to Mailchimp (mailchimp.js) so the existing automation
  *      sends the email copy.
  *
- * Steps 4 and 5 are logged-but-non-fatal: if Airtable or Mailchimp fail, the
- * person still gets their result (this function still returns 200 and the
- * routed+AI-written result), but the failure is logged to Vercel's function logs
- * for Chrisie to notice. The one thing that MUST succeed for a usable response is
- * routing + Groq.
+ * Steps 3, 5, and 6 are logged-but-non-fatal: if Groq, Airtable, or Mailchimp
+ * fail, the person still gets their result (the composed message just won't
+ * include the free-text response paragraph if Groq failed). The one thing that
+ * MUST succeed for a usable response is routing.
  */
 
 const { parseTallyPayload } = require('../lib/parseTally');
 const { routeCushion } = require('../lib/routing');
 const { generateResultMessage } = require('../lib/groq');
-const {
-  composeResultMessage,
-  composeFallbackMessage,
-  composeEmailSummary,
-  composeFallbackEmailSummary,
-} = require('../lib/composeMessage');
+const { composeResultMessage, composeEmailSummary } = require('../lib/composeMessage');
 const { logSubmission } = require('../lib/airtable');
 const { pushToMailchimp } = require('../lib/mailchimp');
 
@@ -72,20 +69,20 @@ module.exports = async (req, res) => {
     return;
   }
 
-  let aiMessage;
-  let emailSummary;
-  try {
-    const groqResult = await generateResultMessage(routedResult, answers);
-    aiMessage = composeResultMessage(routedResult, groqResult);
-    emailSummary = composeEmailSummary(groqResult, routedResult);
-  } catch (err) {
-    // Groq failing shouldn't mean the person gets nothing - fall back to a
-    // plain, honest message built from the fixed always-include copy so the
-    // page still shows something useful.
-    console.error('Groq call failed, using fallback message:', err);
-    aiMessage = composeFallbackMessage(routedResult);
-    emailSummary = composeFallbackEmailSummary(routedResult);
+  // Groq only runs when there's actually free text to respond to. An empty
+  // box (or a Groq failure) still produces the complete, deterministic
+  // message - the AI paragraph is additive, never load-bearing.
+  let aiResult = null;
+  if ((answers.freeText || '').trim()) {
+    try {
+      aiResult = await generateResultMessage(routedResult, answers);
+    } catch (err) {
+      console.error('Groq call failed (non-fatal, message composed without it):', err);
+    }
   }
+
+  const aiMessage = composeResultMessage(routedResult, answers, aiResult);
+  const emailSummary = composeEmailSummary(routedResult, answers);
 
   // Non-fatal: log failures but don't block the response. Airtable/the results
   // page get the full aiMessage; Mailchimp gets the short emailSummary since

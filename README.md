@@ -1,13 +1,26 @@
 # CYA Find Your Fit — Vercel Function
 
-Everything that turns a Tally submission into a routed recommendation, an
-AI-written explanation, a logged data row, and an emailed result.
+Everything that turns a Tally submission into a routed recommendation, a
+composed explanation, a logged data row, and an emailed result.
 
-Built directly from `CYA_Fit_Quiz_Structure_v4.md` — if the routing ever needs to
-change, that doc and `lib/routing.js` should always agree. `lib/routing.test.js`
-has 25 passing tests built from the real scenarios discussed while designing the
-quiz (Chrisie's hip case, the vulvodynia exception, tall-but-light 18", etc.) —
+Built from `docs/CYA_Fit_Quiz_Structure_v5.md` (which lives in this repo now,
+specifically so it can't drift from the code the way v4 did) — if the routing
+ever needs to change, that doc and `lib/routing.js` should always agree.
+`lib/routing.test.js` has 100+ passing tests built from the real scenarios
+discussed while designing the quiz (Chrisie's hip case, the vulvodynia
+exception, tall-but-light 18", Chrisie's 210-lb Extra Cush example, etc.) —
 run `npm test` any time you touch `routing.js`.
+
+## How the message is built (July 2026 revision)
+
+**Code picks the cushion AND explains it. The AI only answers the free-text
+box.** Every "why we recommend" paragraph and every routing-note explanation
+is a fixed template in `lib/composeMessage.js`, guaranteed to match what the
+routing actually did. Groq is called only when the person typed something into
+the optional free-text box — its single paragraph (validation, PT nudge,
+distress acknowledgment) is appended to the deterministic message. An empty
+box means no AI call at all: fully deterministic result, faster page, nothing
+to hallucinate.
 
 ## What's here
 
@@ -17,13 +30,18 @@ api/
   quiz-result.js   GET  - polled by results.html while quiz-submit.js finishes
 lib/
   routing.js       The deterministic "brain" - picks the cushion. No AI here.
-  routing.test.js  25 tests against real scenarios. Run: npm test
+  routing.test.js  100+ tests against real scenarios. Run: npm test
   parseTally.js    Raw Tally payload -> normalized answers. NEEDS YOUR FIELD IDs.
-  groq.js          Calls Groq to write the explanation. Never picks the product.
-  airtable.js       Logs every submission; also the lookup for quiz-result.js
+  groq.js          Calls Groq ONLY to respond to the free-text box + classify distress.
+  composeMessage.js Fixed templates for the whole result message. The only HTML emitter.
+  airtable.js      Logs every submission; also the lookup for quiz-result.js
   mailchimp.js     Pushes the result as merge fields so Mailchimp emails it
 public/
   results.html     Where Tally redirects to. Polls until the result is ready.
+docs/
+  CYA_Fit_Quiz_Structure_v5.md   The single source of truth for the quiz design.
+  Tally_Form_Changes.md          Checklist of form/Airtable/Mailchimp edits to make.
+  Email_Sequence_v2.md           Rewritten 3-email Mailchimp sequence copy.
 ```
 
 ## Why two API endpoints instead of one
@@ -40,11 +58,13 @@ part silently wouldn't work and only the email would arrive.
 1. **Airtable** — create a base with a `Submissions` table. Columns needed (exact
    names, Airtable is picky about matching what the code writes):
    `Tally Submission ID`, `Timestamp`, `Weight`, `Height`, `Pain Locations`,
-   `Duration`, `One-Sided`, `Hard Seat Pain`, `Firm Preference`, `Diagnoses`,
-   `What They've Tried`, `Use Case`, `Needs More Space`, `Recent Events`, `Sex`,
+   `Duration`, `One-Sided`, `Firm Preference`, `Diagnoses`,
+   `Use Case`, `Needs More Space`, `Sex`,
    `Age Range`, `Country`, `State/Region`, `Free Text`, `Routed Product`,
    `Routed Firmness`, `Routed Size`, `Routed Thickness`, `Second Cushion`,
    `AI Message`, `Email`, `First Name`.
+   (July 2026: `Hard Seat Pain`, `What They've Tried`, and `Recent Events` were
+   removed along with their quiz screens — delete those columns if they exist.)
    Get a personal access token (read+write on this base) and the base ID for
    `.env.local`.
 
@@ -81,8 +101,9 @@ part silently wouldn't work and only the email would arrive.
 - `npm test` — routing logic only, no network calls needed.
 - Send a few real test submissions through Tally end-to-end and check: does the
   result page render, did the row land in Airtable, did the Mailchimp email
-  arrive.
-- **Test the distress-handling path deliberately** (Structure v4 §7 — this is not
+  arrive. Send one WITH free text and one WITHOUT — the without-free-text case
+  should never call Groq (check the Vercel function logs).
+- **Test the distress-handling path deliberately** (Structure v5 §6 — this is not
   optional). Groq classifies the free text into `distressTier` ("none" / "crisis" /
   "general_struggle") and only writes plain acknowledgment prose — the actual 988
   crisis line and the guide/blog/provider-directory "For More Support" section are
@@ -98,10 +119,12 @@ part silently wouldn't work and only the email would arrive.
 
 ## Known gaps / things flagged rather than silently decided
 
-- `routing.js` has several `ASSUMPTION:` comments where the source doc was
-  ambiguous or the quiz's weight *buckets* couldn't give an exact match to a rule
-  written in raw numbers (e.g. the 150 lb Extra Cush threshold falls inside the
-  140–180 bucket). Search the file for `ASSUMPTION:` to see all of them.
+- **Awaiting Trudy's confirmation** (see Structure v5 "Still open"): the
+  Extra-Cush-is-Extra-Firm-only reasoning, and reconciling the product page's
+  overlapping weight/firmness copy ("Extra Firm — 200 lbs and up") with the
+  routing table's 201–220 → Firm from her call guidance.
+- `routing.js` still has `ASSUMPTION:` comments where a judgment call was made —
+  search the file for `ASSUMPTION:` to see them.
 - Live stock checking for the 18" waitlist note isn't built — it always shows
   the waitlist-safe copy when 18" is recommended, regardless of actual
   Squarespace stock. Fine for now since the copy never promises a timeline, but
