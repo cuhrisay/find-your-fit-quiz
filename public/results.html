@@ -25,7 +25,7 @@
   }
   .site-logo {
     display: block;
-    height: 64px;
+    height: 88px;
     width: auto;
     margin: 0 auto 24px;
   }
@@ -37,10 +37,18 @@
     border-radius: 4px;
     border: 1px solid #e8e8e8;
   }
-  h1 {
-    font-size: 24px;
+  .kicker {
+    font-size: 13px;
     font-weight: 600;
-    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #C82613;
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 8px;
   }
   .spec-table {
     margin: 24px 0;
@@ -121,7 +129,7 @@
   }
   .site-footer img {
     display: block;
-    height: 28px;
+    height: 40px;
     width: auto;
     margin: 0 auto 12px;
     opacity: 0.85;
@@ -180,6 +188,7 @@
           </div>`;
       }
       card.innerHTML = `
+        <p class="kicker">Find Your Fit</p>
         <h1>Here's Your Fit</h1>
         <div class="spec-table">
           <div class="spec-row">
