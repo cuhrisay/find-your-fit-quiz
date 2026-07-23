@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
   try {
     const groqResult = await generateResultMessage(routedResult, answers);
     aiMessage = composeResultMessage(routedResult, groqResult);
-    emailSummary = composeEmailSummary(groqResult);
+    emailSummary = composeEmailSummary(groqResult, routedResult);
   } catch (err) {
     // Groq failing shouldn't mean the person gets nothing - fall back to a
     // plain, honest message built from the fixed always-include copy so the
