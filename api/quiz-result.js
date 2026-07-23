@@ -15,7 +15,7 @@
  */
 
 const { findSubmissionById } = require('../lib/airtable');
-const { getOrderLink } = require('../lib/productLinks');
+const { getOrderLink, getProductDisplayName } = require('../lib/productLinks');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
   res.status(200).json({
     status: 'ready',
     result: {
-      product: record['Routed Product'],
+      product: getProductDisplayName(record['Routed Product']),
       firmness: record['Routed Firmness'],
       size: record['Routed Size'],
       thickness: record['Routed Thickness'],
