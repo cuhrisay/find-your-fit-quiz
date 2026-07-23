@@ -11,23 +11,49 @@
 
   body {
     font-family: 'Poppins', sans-serif;
-    background: #F4F3F1;
     color: #2C2C2C;
     margin: 0;
     padding: 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    /* Sky placeholder: soft blue-to-cream fade + a few cloud puffs, standing
+       in for a real sky/cloud background image until one is uploaded (see
+       public/assets/ - swap this background block for a background-image
+       once that's in place). */
+    background-color: #eaf4fb;
+    background-image:
+      radial-gradient(70px 30px at 12% 7%, rgba(255,255,255,0.9), transparent 70%),
+      radial-gradient(95px 38px at 9% 10%, rgba(255,255,255,0.85), transparent 70%),
+      radial-gradient(80px 32px at 88% 5%, rgba(255,255,255,0.85), transparent 70%),
+      radial-gradient(100px 42px at 85% 9%, rgba(255,255,255,0.8), transparent 70%),
+      linear-gradient(180deg, #bfe3f7 0%, #dbeef9 30%, #F4F3F1 65%);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
   }
   .page {
     max-width: 560px;
     width: 100%;
   }
-  .site-logo {
+  .brand-mark {
+    text-align: center;
+    margin: 0 auto 28px;
+  }
+  .brand-mark .cushion {
     display: block;
-    height: 88px;
-    width: auto;
-    margin: 0 auto 24px;
+    font-size: 36px;
+    font-weight: 600;
+    color: #C82613;
+    letter-spacing: 0.01em;
+  }
+  .brand-mark .your-assets {
+    display: block;
+    font-size: 18px;
+    font-weight: 500;
+    color: #2C2C2C;
+    margin-top: -2px;
   }
   .card {
     background: #ffffff;
@@ -36,14 +62,6 @@
     padding: 40px;
     border-radius: 4px;
     border: 1px solid #e8e8e8;
-  }
-  .kicker {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #C82613;
-    margin: 0 0 6px;
   }
   h1 {
     font-size: 26px;
@@ -145,7 +163,13 @@
 </head>
 <body>
   <div class="page">
-    <img class="site-logo" alt="Cushion Your Assets" src="https://images.squarespace-cdn.com/content/v1/68e81b678021d5189cf1f247/9d1b0cf7-2a18-4d5c-8624-43fd49dbd83a/Cushion+Your+Assets+Pelvic+Pain+Cushion+Logo+with+Clouds.jpg?format=500w" />
+    <!-- Placeholder wordmark until a real logo/wordmark image is dropped in
+         public/assets/ - swap this div for an <img class="site-logo"> once
+         that's available. -->
+    <div class="brand-mark">
+      <span class="cushion">Cushion</span>
+      <span class="your-assets">Your Assets</span>
+    </div>
     <div class="card" id="card">
       <div class="loading" id="loading">Finding your fit…</div>
     </div>
@@ -188,8 +212,7 @@
           </div>`;
       }
       card.innerHTML = `
-        <p class="kicker">Find Your Fit</p>
-        <h1>Here's Your Fit</h1>
+        <h1>We Have Your Fit!</h1>
         <div class="spec-table">
           <div class="spec-row">
             <span class="spec-label">Product</span>
