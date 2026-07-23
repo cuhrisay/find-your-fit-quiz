@@ -10,6 +10,14 @@
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@700&display=swap');
 
+  /* Without this, any element with width:100% + padding (like .card) renders
+     wider than its siblings, since padding gets added on top of the 100%
+     instead of being included in it - shifts that box (and anything centered
+     inside it) off the shared center line the other elements use. */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
   body {
     font-family: 'Poppins', sans-serif;
     color: #2C2C2C;
@@ -165,6 +173,22 @@
   }
   .site-footer .tagline {
     margin: 0 0 4px;
+  }
+
+  /* The heading is deliberately forced to one line (white-space: nowrap) at
+     a large size - that stops fitting the card's content width on small
+     phones. Shrink the card's padding a bit and the heading down to a size
+     confirmed (via direct measurement) to still fit on one line as low as
+     360px viewport width, rather than letting it wrap or overflow. Placed
+     last in the stylesheet on purpose - at equal specificity, a media query
+     earlier in the file loses to an unconditional rule that comes after it. */
+  @media (max-width: 480px) {
+    .card {
+      padding: 24px;
+    }
+    h1 {
+      font-size: 24px;
+    }
   }
 </style>
 </head>
