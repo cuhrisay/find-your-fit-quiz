@@ -174,14 +174,31 @@ knowing about, not worth the added complexity.
 | Duration | Temporary-Soother framing (central-only + under a month) |
 | Free text | The one AI paragraph (only when non-empty) |
 
+**CLAIM-SAFETY RULES (Chrisie, July 2026 — firm, not stylistic).** These
+apply to every piece of result copy, condition text especially:
+- **Never** say the cushion treats, cures, is "designed for", or was "made
+  for" any condition. It *relieves pressure* — that is the ceiling of the
+  claim. Describe what it mechanically does and let that stand.
+- **Never** rank ("#1"/"number one"). PN, tailbone pain/coccydynia, male
+  prostatitis, and vulvodynia are "one of the most common" things people
+  come to us about — say exactly that, no ranking.
+- **The real mechanism** (Trudy's call + Chrisie's own hip-pain experience):
+  relieving sitting pressure lets a tight pelvic floor relax, and *that
+  relaxation* is what eases pain — including referred pain felt somewhere the
+  cushion never directly touches (hips, thighs, buttocks). So **do not** say
+  "pressure off exactly where it hurts" — it's wrong for referred pain and
+  makes people go "but I don't have pain there." The "Why We Recommend"
+  sentence uses the universal pelvic-floor framing for exactly this reason.
+
 **Condition-specific mechanism text** (`DIAGNOSIS_TEXT` in composeMessage.js):
 each named diagnosis gets a paragraph connecting the condition to what the
-design does about it — PN = the flagship use case ("number one reason people
-come to us", channel suspends the pudendal nerve pathway), prostatitis =
-Trudy's sitting-pressure point, endo = referred-nerve-pain mechanism
-(Chrisie's own case), coccydynia = tailbone suspended, etc. Mechanism/relief
-language only — never a cure claim. Vulvodynia and recovering-from-surgery
-use product-neutral wording since they can appear on Soother results.
+cushion mechanically does — PN/coccydynia/prostatitis/vulvodynia lead with
+"one of the most common things people come to us about"; prostatitis uses
+Trudy's sitting-pressure/pelvic-floor-tension point without denying the
+diagnosis; endo uses the referred-pain mechanism (Chrisie's own case). All
+pressure-relief/relaxation language, never cure or "designed for". Vulvodynia
+and recovering-from-surgery use product-neutral wording since they can appear
+on Soother results.
 
 **18" copy rules** (per Chrisie): it IS wider — say so, never "isn't a bigger
 cushion." Never compare against a 16" experience they haven't had. It folds
