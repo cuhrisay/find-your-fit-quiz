@@ -158,9 +158,40 @@ knowing about, not worth the added complexity.
 - Everything else → one cushion, no also-consider. One confident answer is the default.
 
 ## 4. Result copy — always shown, code-generated
+
+### Message anatomy (July 2026 rework — every input the customer gives must
+### surface somewhere in the message; nothing they told us gets ignored)
+| Quiz input | Where it appears in the result |
+|---|---|
+| Pain locations | Named in the "Why We Recommend" sentence and the email teaser |
+| Diagnosis | Woven into the "Why" sentence AND gets its own condition-specific mechanism paragraph (see below) — never just a generic "we hear about it" line |
+| Weight + firmness preference | Explicit "We set your firmness at X based on your weight [and your preference for…]" line |
+| Use: travel/compact | Low Profile notes (chosen/tradeoff/unavailable) |
+| Use: driving | Height-specific note (tall→LP, short→booster), or the default "Regular 2\" is our recommendation for the car" line when nothing else mentions the car |
+| Use: wheelchair/recliner | Wide-seat check note; wheelchair/recliner + 18" + travel pairing notes |
+| Needs more space | 18" gut-check + honest wider-size explanation + waitlist |
+| One-sided pain | Custom-cutout conversation note |
+| Duration | Temporary-Soother framing (central-only + under a month) |
+| Free text | The one AI paragraph (only when non-empty) |
+
+**Condition-specific mechanism text** (`DIAGNOSIS_TEXT` in composeMessage.js):
+each named diagnosis gets a paragraph connecting the condition to what the
+design does about it — PN = the flagship use case ("number one reason people
+come to us", channel suspends the pudendal nerve pathway), prostatitis =
+Trudy's sitting-pressure point, endo = referred-nerve-pain mechanism
+(Chrisie's own case), coccydynia = tailbone suspended, etc. Mechanism/relief
+language only — never a cure claim. Vulvodynia and recovering-from-surgery
+use product-neutral wording since they can appear on Soother results.
+
+**18" copy rules** (per Chrisie): it IS wider — say so, never "isn't a bigger
+cushion." Never compare against a 16" experience they haven't had. It folds
+like every other cushion — it's just a large piece to carry, not a
+"stay-in-place, not travel" product.
+
+### Fixed blocks
 - Break-in: "our cushions come firm and soften over time."
 - Returns: 14 days + email-for-extension.
-- 18" only: waitlist note + the extra-inch/stay-in-place explanation.
+- 18" only: waitlist note + the wider-size explanation.
 - Every result ends with the guide / blog / provider-directory / support-email block.
 
 ## 5. Data log (Airtable)
