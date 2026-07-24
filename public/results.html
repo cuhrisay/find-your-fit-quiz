@@ -28,19 +28,16 @@
     align-items: center;
     min-height: 100vh;
     box-sizing: border-box;
-    /* Sky placeholder: soft blue-to-cream fade + a few cloud puffs, standing
-       in for a real sky/cloud background image until one is uploaded (see
-       public/assets/ - swap this background block for a background-image
-       once that's in place). */
-    background-color: #5EA2D9;
-    background-image:
-      radial-gradient(70px 30px at 12% 7%, rgba(255,255,255,0.9), transparent 70%),
-      radial-gradient(95px 38px at 9% 10%, rgba(255,255,255,0.85), transparent 70%),
-      radial-gradient(80px 32px at 88% 5%, rgba(255,255,255,0.85), transparent 70%),
-      radial-gradient(100px 42px at 85% 9%, rgba(255,255,255,0.8), transparent 70%),
-      linear-gradient(180deg, #5EA2D9 0%, #a9cfec 30%, #F4F3F1 65%);
+    /* Real sky/cloud photo asset. background-size:cover (not stretch) so it
+       never distorts regardless of how tall the page renders - the source
+       is portrait (2550x3300), plenty wide for any realistic viewport, so
+       cover only ever crops vertically, never upscales. Fallback color
+       behind it in case the image is slow to load or fails. */
+    background-color: #bfe3f7;
+    background-image: url('/assets/background.webp');
+    background-size: cover;
+    background-position: top center;
     background-repeat: no-repeat;
-    background-size: 100% 100%;
   }
   .page {
     max-width: 720px;
@@ -49,21 +46,13 @@
   .brand-mark {
     text-align: center;
     margin: 0 auto 28px;
-    white-space: nowrap;
   }
-  .brand-mark .cushion,
-  .brand-mark .your-assets {
-    font-family: 'Epilogue', sans-serif;
-    font-size: 30px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-  }
-  .brand-mark .cushion {
-    color: #A61111;
-  }
-  .brand-mark .your-assets {
-    color: #2C2C2C;
-    margin-left: 8px;
+  .brand-mark img {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    margin: 0 auto;
   }
   .card {
     background: #ffffff;
@@ -195,18 +184,14 @@
 </head>
 <body>
   <div class="page">
-    <!-- Placeholder wordmark until a real logo/wordmark image is dropped in
-         public/assets/ - swap this div for an <img class="site-logo"> once
-         that's available. -->
     <div class="brand-mark">
-      <span class="cushion">Cushion</span>
-      <span class="your-assets">Your Assets</span>
+      <img alt="Cushion Your Assets — Find Your Fit Quiz" src="/assets/logo.webp" />
     </div>
     <div class="card" id="card">
       <div class="loading" id="loading">Finding your fit…</div>
     </div>
     <div class="site-footer">
-      <img alt="Cushion Your Assets" src="https://images.squarespace-cdn.com/content/v1/68e81b678021d5189cf1f247/9d1b0cf7-2a18-4d5c-8624-43fd49dbd83a/Cushion+Your+Assets+Pelvic+Pain+Cushion+Logo+with+Clouds.jpg?format=200w" />
+      <img alt="Cushion Your Assets" src="/assets/footer-logo.webp" />
       <p class="tagline">Cushion Your Assets — the patented pelvic pain relief cushion.</p>
       <p>
         Questions about your fit? Email <a href="mailto:support@cushionyourassets.com">support@cushionyourassets.com</a>
