@@ -77,6 +77,12 @@ The Simple Soother is offered only when ALL of these hold:
 3. **Duration isn't long-established:** over 2 years → never Soother; 6 months–2 years
    → only if recovering-from-surgery/childbirth (temporary even if slow to heal);
    under 6 months → fine.
+4. **No confident need for more room** (`needsMoreSpace !== 'yes'`) — the Soother is a
+   single fixed size, so it can't serve someone who needs the 18". (August 2026,
+   Chrisie/Claude — not yet run past Trudy.) When this is the only thing blocking
+   Soother, the Twin Cheeks result says so plainly: pain pattern alone would have
+   pointed to the cheaper Soother, but they got bumped to Twin Cheeks for space. A
+   "not sure" on space does NOT bump — only a confident "yes" does.
 
 Soother framing: **temporary** ("central and recent, a smart lower-cost start") when
 recent or recovering; otherwise **central_only** ("you only reported central pain").
@@ -139,6 +145,11 @@ valid combo (18" comes in Regular and Extra Cush).
   variant sells out, Squarespace's native product-page "notify me" handles it.
 - Otherwise **16"**. Wheelchair/recliner + heavier build + not tall → "your seat may run
   wide, the 18" might fit better" note.
+- **"Not sure" + a supporting signal** (heavier weight bucket, OR reported thigh/hamstring
+  pain — a seat-width complaint in disguise) → 16" with a gentle "worth a look" nudge
+  toward 18". Weight/thigh pain are proxies, not proof, so they only ever shape the
+  ambiguous "not sure" case — a confident "no" is never second-guessed, and a confident
+  "yes" is never overridden by body metrics either. (August 2026, Chrisie/Claude.)
 
 ### Second cushion — a Low Profile companion, only when it genuinely helps
 - 18" + travel + wheelchair → no pairing (the chair travels with them); note only.
@@ -258,3 +269,9 @@ only the 3" Extra Firm exists today, so that's all the quiz offers.
    never gets two different answers.
 3. **Phone number** — after launch, replace call/contact prompts on product
    pages with the quiz link; keep the number on the contact page only.
+4. **Soother/space gate + "not sure" size nudge (§3)** — implemented August
+   2026 from Chrisie's own read of the gap (Soother is one-size, so it
+   shouldn't be offered to someone who confidently needs the 18"), not yet
+   run past Trudy. Logic and copy are live and tested; flag if she wants the
+   thresholds (which weight buckets count as "heavier," whether thigh pain
+   alone should be enough) adjusted.
