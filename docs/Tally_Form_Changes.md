@@ -29,6 +29,10 @@ The `One-Sided` column is no longer written (safe to delete, or leave it — it
 just won't populate on new rows). The earlier round already had you delete
 `Hard Seat Pain`, `What They've Tried`, and `Recent Events`.
 
+As of the August 2026 privacy pass, `Email` and `First Name` are also no
+longer written — Airtable never receives identity now, only Mailchimp does.
+Safe to delete both columns whenever convenient.
+
 ## 4. Mailchimp
 
 - Merge fields are unchanged: `PRODUCT`, `FIRMNESS`, `SIZE`, `THICKNS`,
@@ -40,7 +44,14 @@ just won't populate on new rows). The earlier round already had you delete
   `<<Firmness>>` mixed merge syntax in email 3, and the "a couple days ago"
   timing in email 2, and adds the benefit copy + testimonials Chrisie wanted).
 
-## 5. Squarespace (pre-launch, pending Trudy)
+## 5. Webhook signing secret (recommended, not yet done)
+
+Tally -> your form -> Integrations -> Webhooks -> the webhook -> generate a
+signing secret, then add it as `TALLY_SIGNING_SECRET` in Vercel's env vars.
+Right now `api/quiz-submit.js` will accept a POST from anyone who finds the
+URL, not just Tally — this closes that gap. See `.env.example`.
+
+## 6. Squarespace (pre-launch, pending Trudy)
 
 - Consolidate Low Profile + 18" into the Twin Cheeks product page as variants
   (the quiz's order links assume two product pages only: Twin Cheeks and

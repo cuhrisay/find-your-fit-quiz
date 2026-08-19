@@ -22,6 +22,28 @@ distress acknowledgment) is appended to the deterministic message. An empty
 box means no AI call at all: fully deterministic result, faster page, nothing
 to hallucinate.
 
+## Privacy design (August 2026)
+
+This quiz collects sexual/reproductive/pelvic health information, so identity
+and health data are deliberately kept apart:
+
+- **Airtable never receives email or name.** The `Submissions` table is keyed
+  only by the opaque Tally submission ID — see the privacy note at the top of
+  `lib/airtable.js`.
+- **Mailchimp is the only place email connects to a recommendation** (product/
+  firmness/size/thickness only — never the raw diagnoses, pain locations, or
+  free text). That's what support uses to look someone up if they call in.
+- **Groq never receives email or name either** — only the structured health
+  answers and free text needed to write the one free-text response paragraph.
+
+Because Mailchimp is the sole record of that email↔recommendation link, its
+push is retried with backoff (`withRetries` in `api/quiz-submit.js`) rather
+than failing silently on the first transient error.
+
+There is currently no consent flow or privacy notice in front of the quiz —
+that's a gap, not a design choice, and should be closed before this handles
+real customer traffic at scale.
+
 ## What's here
 
 ```
@@ -62,9 +84,11 @@ part silently wouldn't work and only the email would arrive.
    `Use Case`, `Needs More Space`, `Sex`,
    `Age Range`, `Country`, `State/Region`, `Free Text`, `Routed Product`,
    `Routed Firmness`, `Routed Size`, `Routed Thickness`, `Second Cushion`,
-   `AI Message`, `Email`, `First Name`.
+   `AI Message`, `Consent Given`.
    (No longer written, safe to delete: `Hard Seat Pain`, `What They've Tried`,
-   `Recent Events`, `One-Sided`.)
+   `Recent Events`, `One-Sided`, `Email`, `First Name`. Email/First Name were
+   removed on purpose in the August 2026 privacy pass — see "Privacy design"
+   below.)
    Get a personal access token (read+write on this base) and the base ID for
    `.env.local`.
 
@@ -95,6 +119,13 @@ part silently wouldn't work and only the email would arrive.
    `/api/quiz-submit` URL. Then Settings -> Redirect on Completion -> your
    deployed `/results.html?id=@SubmissionID` (use Tally's `@` menu to insert the
    actual submission ID token, don't type it literally).
+
+7. **Set a webhook signing secret** — on that same Tally webhook, generate a
+   signing secret and put it in `TALLY_SIGNING_SECRET` (`.env.local` and
+   Vercel's env vars). Without this, `api/quiz-submit.js` accepts a POST from
+   anyone who finds the URL, not just Tally — see `.env.example`. Until this is
+   set, the endpoint stays open on purpose so the code can ship before the
+   secret is generated; add it as soon as convenient.
 
 ## Testing before this touches a real customer
 

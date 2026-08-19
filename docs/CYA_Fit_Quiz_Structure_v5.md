@@ -201,10 +201,20 @@ like every other cushion — it's just a large piece to carry, not a
 - Every result ends with the guide / blog / provider-directory / support-email block.
 
 ## 5. Data log (Airtable)
-All structured answers + free text + routed result + composed message. Email
-in its own column, kept separable from aggregate pulls (process discipline on
-the Airtable side). No-longer-written columns: Hard Seat Pain, What They've
-Tried, Recent Events, One-Sided. Sex/age/country/state retained for Meta-ads stats.
+All structured answers + free text + routed result + composed message. No
+email or name — Airtable is keyed only by the opaque Tally submission ID
+(August 2026 privacy pass). Mailchimp is now the sole place an email connects
+to a recommendation. No-longer-written columns: Hard Seat Pain, What They've
+Tried, Recent Events, One-Sided, Email, First Name. Sex/age/country/state
+retained for Meta-ads stats.
+
+The webhook itself (`api/quiz-submit.js`) verifies Tally's `Tally-Signature`
+header against `TALLY_SIGNING_SECRET` when that env var is set, so the
+endpoint isn't open to arbitrary POSTs once configured.
+
+A required consent screen was added right after the welcome screen (before
+any health question) — "Consent Given" (yes/no) is logged per submission as
+proof the checkbox was checked, not just relied on as a UI-only gate.
 
 ## 6. Distress handling (not optional)
 Unchanged in substance. Groq classifies free text into none /
