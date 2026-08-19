@@ -58,13 +58,13 @@ part silently wouldn't work and only the email would arrive.
 1. **Airtable** — create a base with a `Submissions` table. Columns needed (exact
    names, Airtable is picky about matching what the code writes):
    `Tally Submission ID`, `Timestamp`, `Weight`, `Height`, `Pain Locations`,
-   `Duration`, `One-Sided`, `Firm Preference`, `Diagnoses`,
+   `Duration`, `Firm Preference`, `Diagnoses`,
    `Use Case`, `Needs More Space`, `Sex`,
    `Age Range`, `Country`, `State/Region`, `Free Text`, `Routed Product`,
    `Routed Firmness`, `Routed Size`, `Routed Thickness`, `Second Cushion`,
    `AI Message`, `Email`, `First Name`.
-   (July 2026: `Hard Seat Pain`, `What They've Tried`, and `Recent Events` were
-   removed along with their quiz screens — delete those columns if they exist.)
+   (No longer written, safe to delete: `Hard Seat Pain`, `What They've Tried`,
+   `Recent Events`, `One-Sided`.)
    Get a personal access token (read+write on this base) and the base ID for
    `.env.local`.
 

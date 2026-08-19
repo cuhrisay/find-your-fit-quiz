@@ -29,13 +29,13 @@ the failure mode is gone.
 
 An empty free-text box = no AI call at all. Fully deterministic result.
 
-## 2. The flow (13 screens, down from 16)
+## 2. The flow (12 screens)
 
-Removed in this revision: the standalone hard-seat-pain question (merged into
-pain locations), "what have you already tried" (data-only, cut for friction),
-and "recent surgery/accident" (its routing job is covered by the duration
-question). Sex/age and country/state stay — they're skippable, low-friction,
-and feed Meta-ads audience data, which is a stated goal of the quiz.
+Removed over the revisions: the standalone hard-seat-pain question (merged into
+pain locations), "what have you already tried" and "recent surgery/accident"
+(the duration question covers the routing), and the "is your pain on one side?"
+question (August 2026 — irrelevant now that custom cutouts aren't offered).
+Sex/age and country/state stay — skippable, low-friction, feed Meta-ads data.
 
 - **Screen 0 — Welcome.** Title, one line of what to expect, start button.
 - **Screen 1 — How much do you weigh?** Nine brackets + "It's a gift / I don't
@@ -43,44 +43,49 @@ and feed Meta-ads audience data, which is a stated goal of the quiz.
 - **Screen 2 — How tall are you?** short / regular / tall.
 - **Screen 3 — Where is the pain?** (multi-select) Tailbone, Sit bones,
   Rectal, Perineum, Genitals, Bladder/Urethra, Prostate, Hips, Buttocks,
-  **Backs of my thighs / hamstrings** (new — carries the old hard-seat
-  signal), Groin, Not sure/it changes.
-- **Screen 4 — How long has this been going on?** Also drives the temporary
-  Soother framing (under a month).
-- **Screen 5 — Is your pain on one side?** Yes → custom-cutout conversation
-  note (never a custom purchase recommendation).
-- **Screen 6 — Firmer or softer?** Firm / Soft / Depends-not sure. On-screen
-  break-in framing in Trudy's voice.
-- **Screen 7 — Diagnosis?** (multi-select, optional) Feeds Soother
-  disqualification + the AI's validation.
-- **Screen 8 — Where will you mainly use it?** (multi-select).
-- **Screen 9 — Do you find yourself needing a bigger seat / more space when
+  Backs of my thighs / hamstrings, Groin, Not sure/it changes. Drives product
+  (central-only → Soother candidate) and the hard-surface signal (sit bones /
+  hips / buttocks / thighs → Extra Cush candidate, never Low Profile).
+- **Screen 4 — How long has this been going on?** Gates the Soother (over 2 yr
+  never; 6mo–2yr only if recovering) and drives the temporary framing.
+- **Screen 5 — Firmer or softer?** Firm / Soft / Depends-not sure. On-screen
+  break-in framing in Trudy's voice. (The old "one side?" question was removed
+  August 2026 — Trudy: irrelevant, and custom cutouts aren't offered.)
+- **Screen 6 — Diagnosis?** (multi-select, optional) Gates the Soother +
+  drives condition-specific result copy.
+- **Screen 7 — Where will you mainly use it?** (multi-select).
+- **Screen 8 — Do you find yourself needing a bigger seat / more space when
   you sit?** Drives 16"/18".
-- **Screen 10 — Sex + age range** (optional, one screen) [data/marketing].
-- **Screen 11 — Country, then state/region** [data/marketing].
-- **Screen 12 — Anything else?** (free text, optional, prominent) — the box
+- **Screen 9 — Sex + age range** (optional, one screen) [data/marketing].
+- **Screen 10 — Country, then state/region** [data/marketing].
+- **Screen 11 — Anything else?** (free text, optional, prominent) — the box
   the AI reads. "Don't worry about being embarrassed — we've heard it all."
-- **Screen 13 — Where should we send your results?** First name optional,
+- **Screen 12 — Where should we send your results?** First name optional,
   email required. Redirects to results.html.
 
-## 3. Routing tables
+## 3. Routing tables (rewritten August 2026 with Trudy's product-logic pass)
 
-### Product
-| Condition | Result |
-|---|---|
-| Pain includes tailbone, sit bones, rectal, hips, buttocks, thighs/hamstrings, groin, perineum, or prostate — or "not sure" | Twin Cheeks |
-| Central only (bladder/urethra and/or genital ONLY) with no nerve/muscle-mechanism diagnosis | Simple Soother |
-| Central only + duration under a month + no chronic diagnosis | Simple Soother with the **"this may be temporary, start with the lower-cost option"** framing (same product, different message) |
-| Central only + a disqualifying diagnosis (pudendal neuralgia, PFD, vaginismus, pelvic girdle pain, endo, coccydynia, IC, prostatitis/CPPS) | Twin Cheeks |
-| One-sided pain = Yes | Standard product + the custom-cutout conversation note. Custom is never the primary result. |
+### Product — Twin Cheeks (default) vs Simple Soother
+The Simple Soother is offered only when ALL of these hold:
+1. **Every** reported pain location is **central**: groin, genital, bladder/urethra,
+   or rectal. A tight cluster of these is fine; any non-central location (tailbone,
+   sit bones, hips, buttocks, thighs, **perineum, prostate**) → Twin Cheeks.
+2. **No condition implying wider pain.** Soother-incompatible → Twin Cheeks:
+   pudendal neuralgia, pelvic floor dysfunction, endometriosis, pelvic girdle pain,
+   coccydynia, vaginismus, prostatitis/CPPS. Soother-compatible: vulvodynia,
+   **interstitial cystitis**, recovering-from-surgery, "something else", no diagnosis.
+3. **Duration isn't long-established:** over 2 years → never Soother; 6 months–2 years
+   → only if recovering-from-surgery/childbirth (temporary even if slow to heal);
+   under 6 months → fine.
 
-Soother results always include the fixed upgrade line: *"If this doesn't feel
-like enough, Twin Cheeks is an easy upgrade — just let us know."*
+Soother framing: **temporary** ("central and recent, a smart lower-cost start") when
+recent or recovering; otherwise **central_only** ("you only reported central pain").
+Every Soother result includes the upgrade line: *"If this doesn't feel like enough,
+Twin Cheeks is an easy upgrade."* If they also travel, note it's not the best for travel.
 
-**Soother specs are fixed** (per the live product page): 3" thick, one size,
-firmness = Medium at 139 lbs and under, Firm at 140+. A Soother result never
-routes through the Twin Cheeks firmness/thickness/size tables — those variants
-don't exist on the Soother page.
+**Soother specs are fixed:** 3" thick, one size, **Medium under 140 lbs / Firm 140+**.
+On the cusp (130–150) the firmness preference breaks the tie (too firm can hurt, too
+soft won't hold). A Soother result never touches the Twin Cheeks tables below.
 
 ### Firmness — weight bucket × preference (Twin Cheeks only)
 | Weight | Firm pref | Soft pref | Not sure |
@@ -90,72 +95,56 @@ don't exist on the Soother page.
 | 130–139 | Medium Plus | Medium | Medium |
 | 140–150 | Medium Plus | Medium | Medium Plus |
 | 151–169 | Medium Plus | Medium Plus | Medium Plus |
-| 170–180 | Firm | Medium Plus | Medium Plus |
-| 181–200 | Firm | Firm | Firm |
-| 201–220 | Extra Firm | Firm | Firm |
-| Over 220 | Extra Firm | Extra Firm | Extra Firm |
+| 170–180 | Firm | *(Extra Cush)* | Medium Plus |
+| 181–200 | Firm | *(Extra Cush)* | Firm |
+| 201–220 | Extra Firm | *(Extra Cush)* | Firm |
+| Over 220 | Extra Firm | *(Extra Cush)* | Extra Firm |
 
-### Hard-seat signal
-Selecting **buttocks, hips, or thighs/hamstrings** on the pain question is the
-hard-seat-pain signal (the old standalone question is gone).
+*Soft preference at 170+ promotes to Extra Cush (displayed as Extra Firm) — see below.*
 
-### Extra Cush 3" (a Twin Cheeks variant: soft top layer over an Extra Firm base)
-| Hard-seat pain | Band | Preference | Result |
-|---|---|---|---|
-| Yes | Firm or Extra Firm | Soft/cushy | **Extra Cush primary** (displayed firmness: Extra Firm — the only fabric it exists in) |
-| Yes | Firm or Extra Firm | Firm or not sure | Keep their firm cushion; **Extra Cush "also consider"** note (the real-world pattern: people order Firm/Extra Firm, find it very firm on sore buttocks/hips/thighs, wish they'd known). Suppressed when car/travel/public use is selected. |
-| Yes | Medium or below | any | No Extra Cush mention at all |
-| No | any | any | No Extra Cush mention at all |
+### Extra Cush 3" (Extra Firm base + cushy top; the ONLY fabric is Extra Firm)
+The point of the Extra Cush: firm/extra-firm seats are *hard* and hurt people who
+can't tolerate a hard surface — the cushy top fixes that. It only makes sense at
+**weight ≥ 170** (below that, weight-based firmness is Medium-ish anyway — no hardness
+problem). At 170+, firmness preference drives it:
 
-Extra Cush + travel/car selected → keep Extra Cush, flag the doesn't-fold
-tradeoff plainly. Never silently swap; never suggest Low Profile to a
-hard-seat-pain sufferer (it wouldn't hold up for them — mentioning it only
-adds confusion).
-
-### Thickness (Twin Cheeks)
-| Trigger | Result |
+| Preference (at 170+) | Result |
 |---|---|
-| Default (including car at regular/short height) | Regular 2" |
-| Travels often / needs compact | Low Profile 1.5" — **same firmness as Regular, no bump** (confirmed by Trudy directly, July 2026 — see note below). LP only exists in Medium/Medium Plus/Firm. Soft-preference tradeoff flagged (less depth = less give, regardless of firmness label). Band outside LP's range → stay Regular with the "wouldn't hold up" note. |
-| Tall (5'11"+) + car | Low Profile 1.5" (same firmness, no bump) |
-| Short (5'2"−) + car | Regular + booster-cushion note |
-| Hard-seat pain + wants compact | **Regular** — support need beats compactness want; Low Profile never mentioned |
-| Size is 18" | Low Profile is **never** available regardless of firmness/travel — 18" only comes in Regular or Extra Cush 3" (confirmed by Trudy). Falls back to Regular with its own note; a Low Profile 16" is offered as a second-cushion companion for the road when travel is also a stated need. |
+| **Cushy** | **Extra Cush primary.** Note offers "prefer no added height? Regular's also great." |
+| **Firm** | **Regular firm/extra-firm.** IF they also report hard-surface pain (sit bones / hips / buttocks / thighs) → "consider Extra Cush, it softens the firm feel (adds height)." No hard-surface pain → plain Regular. |
+| **Not sure** | **Regular**, with "torn between firm and cushy? Extra Cush gives both (adds height)." |
 
-**Why no bump (Trudy, July 2026, resolving an apparent contradiction with the
-call):** on the call she said going shorter needs going firmer for the same
-support; asked directly with a concrete example ("Medium Plus Regular — Firm
-Low Profile?") she said "the same as the regular cushion." Both are true
-because they're describing different things — **thickness** (how much foam
-there is to compress into) is what produces perceived softness/give;
-**firmness rating** is what prevents bottoming out. Low Profile has less
-depth, so it inherently gives less regardless of its firmness label — it
-doesn't need a firmer label to compensate, it just has less cushioning. This
-is also why Extra Cush is a soft top layer over an *Extra Firm* base (depth
-for give, firmness for support), and why hard-seat-pain sufferers stay on
-Regular instead of Low Profile — they need depth, not a firmness adjustment.
+Hard-surface pain = **sit bones, hips, buttocks, thighs/hamstrings** (these force
+Twin Cheeks and mean Low Profile is never offered). PN on its own does **not** trigger
+an Extra Cush nudge (only cushy preference or actual hard-surface pain do). Extra Cush
+always carries a height caveat, plus a car caveat (SUV/minivan/adjustable seat, else
+Regular for a small car) or a travel caveat (bulkier to pack). 18" + Extra Cush is a
+valid combo (18" comes in Regular and Extra Cush).
 
-**Deliberately not implemented:** Trudy also said "a Low Profile Firm may
-still work as an Extra Firm" for people under (not over) 220 lbs who'd
-otherwise need Extra Firm — a hedged substitute at Low Profile's firmness
-ceiling. Given the hedge ("may") and that this is exactly the weight range
-most likely to bottom out, the code keeps routing these people to Regular
-Extra Firm rather than offering the uncertain Low Profile substitute. Worth
-knowing about, not worth the added complexity.
+### Low Profile 1.5" (Trudy: bump the firmness UP — reverses the July "no bump")
+- **Firmness bumps up one band** from the weight-based level (shorter foam has to be
+  firmer to hold the same weight), **capped at Firm** — LP isn't made in Extra Firm.
+  This naturally yields "Medium LP only for very light people" (under-120 Soft → Medium).
+- **Never over 200 lbs** — the foam isn't supportive enough (Trudy: the Medium LPs come
+  back almost every time). **Never for hard-surface pain.** **Never in 18".**
+- **LP primary** only when travel/compact is the dominant need (they travel and have no
+  stationary use — desk/home/recliner/wheelchair) and they qualify.
+- Otherwise **Regular is primary** and LP is offered as a **companion** for travel, or
+  for driving if they're tall and want less height. Over-200 + wanted compact → Regular
+  + "a Low Profile wouldn't hold you up at your weight."
 
-### Size
-| Trigger | Result |
-|---|---|
-| "Yes, I need more space" | 18" — trusted, with a light gut-check note + the stay-in-place/extra-inch explanation + waitlist copy |
-| Anything else | 16". Wheelchair/recliner + heavier build → "double-check whether your seat runs wide" note. |
+### Size — 16" default, 18" on a confident "yes"
+- "Yes, I need more space" → **18"** with the honest wider-size explanation (which now
+  folds in its own gut-check). **No stock/waitlist copy** — 18" is kept in stock; if a
+  variant sells out, Squarespace's native product-page "notify me" handles it.
+- Otherwise **16"**. Wheelchair/recliner + heavier build + not tall → "your seat may run
+  wide, the 18" might fit better" note.
 
-### Second cushion — only when uses genuinely oppose
-- 18" + wheelchair + travel → no pairing (the wheelchair travels with them); note only.
-- 18" + travel (recliner, or no particular stay-put context) → Low Profile 16"
-  pairing suggested if their band allows it — since 18" never comes in Low
-  Profile, this is the only way to serve the travel need at all.
-- Extra Cush also-consider (table above).
-- Everything else → one cushion, no also-consider. One confident answer is the default.
+### Second cushion — a Low Profile companion, only when it genuinely helps
+- 18" + travel + wheelchair → no pairing (the chair travels with them); note only.
+- 18" + travel (otherwise) → Low Profile 16" companion if eligible; else a tradeoff note.
+- Regular + travel (or tall + driving) + LP-eligible → Low Profile 16" companion.
+- Everything else → one cushion. One confident answer is the default.
 
 ## 4. Result copy — always shown, code-generated
 
@@ -164,14 +153,13 @@ knowing about, not worth the added complexity.
 | Quiz input | Where it appears in the result |
 |---|---|
 | Pain locations | Named in the "Why We Recommend" sentence and the email teaser |
-| Diagnosis | Woven into the "Why" sentence AND gets its own condition-specific mechanism paragraph (see below) — never just a generic "we hear about it" line |
-| Weight + firmness preference | Explicit "We set your firmness at X based on your weight [and your preference for…]" line |
-| Use: travel/compact | Low Profile notes (chosen/tradeoff/unavailable) |
-| Use: driving | Height-specific note (tall→LP, short→booster), or the default "Regular 2\" is our recommendation for the car" line when nothing else mentions the car |
-| Use: wheelchair/recliner | Wide-seat check note; wheelchair/recliner + 18" + travel pairing notes |
-| Needs more space | 18" gut-check + honest wider-size explanation + waitlist |
-| One-sided pain | Custom-cutout conversation note |
-| Duration | Temporary-Soother framing (central-only + under a month) |
+| Diagnosis | Woven into the "Why" sentence AND gets its own condition-specific mechanism paragraph — never a generic "we hear about it" line |
+| Weight + firmness preference | "We set your firmness at X…" line (special either/or wording at 140–150; skipped when Extra Cush / Low Profile explain their own firmness) |
+| Use: travel/compact | Low Profile note (primary or companion), or "too heavy for LP" note |
+| Use: driving | Extra Cush car caveat, Low Profile-for-driving companion, or the default "Regular is our car pick, adjust your seat for the height" line |
+| Use: wheelchair/recliner | Wide-seat check note; wheelchair + 18" + travel pairing note |
+| Needs more space | 18" wider-size explanation (with built-in gut-check). No stock/waitlist copy. |
+| Duration | Temporary-vs-central Soother framing |
 | Free text | The one AI paragraph (only when non-empty) |
 
 **CLAIM-SAFETY RULES (Chrisie, July 2026 — firm, not stylistic).** These
@@ -208,14 +196,15 @@ like every other cushion — it's just a large piece to carry, not a
 ### Fixed blocks
 - Break-in: "our cushions come firm and soften over time."
 - Returns: 14 days + email-for-extension.
-- 18" only: waitlist note + the wider-size explanation.
+- Break-in note now also says a new cushion takes getting used to (different way of sitting).
+- 18" only: the wider-size explanation (no stock/waitlist copy — 18" is kept in stock).
 - Every result ends with the guide / blog / provider-directory / support-email block.
 
 ## 5. Data log (Airtable)
 All structured answers + free text + routed result + composed message. Email
 in its own column, kept separable from aggregate pulls (process discipline on
-the Airtable side). Removed columns: Hard Seat Pain, What They've Tried,
-Recent Events. Sex/age/country/state retained for marketing (Meta ads) stats.
+the Airtable side). No-longer-written columns: Hard Seat Pain, What They've
+Tried, Recent Events, One-Sided. Sex/age/country/state retained for Meta-ads stats.
 
 ## 6. Distress handling (not optional)
 Unchanged in substance. Groq classifies free text into none /
@@ -224,40 +213,38 @@ general_struggle / crisis and writes only a one-sentence acknowledgment; the
 `composeMessage.js`. The two tiers must never be conflated. Test both
 deliberately before launch.
 
-## 7. Resolved by Trudy, July 2026 (written follow-up after the call)
+## 7. Resolved by Trudy (product-logic pass, August 2026)
 
-1. **Weight/firmness table** — asked to reconcile the quiz's numbers with the
-   site's, Trudy said to leave the site as-is ("we should probably leave it
-   the same as the brochure"). Read as: the site's overlapping bands (e.g.
-   Medium Plus 130–180, Firm 170–200) are the intentionally loose
-   customer-facing display; the quiz's firmness-preference question is
-   exactly "how to know when to go up or down" within that overlap. No code
-   change — the routing table already does this. The old open item about the
-   201–220 lb / Extra Firm mismatch is resolved this way, not by changing the
-   number.
-2. **Extra Cush is Extra Firm only** — confirmed directly ("The 3" is only
-   Extra Firm, Extra Cush"). She'd like a 2.5" Firm Extra Cush eventually —
-   noted for the product roadmap, not the current quiz.
-3. **Low Profile's real use case** — confirmed: travel, very tall/short
-   people, long drives/flights, or people who can't tolerate firmness (who
-   need more *depth*, i.e. Regular or Extra Cush, not a thinner cushion).
-   Matches the existing hard-seat-pain-stays-on-Regular rule.
-4. **Low Profile firmness: no bump** — see the Thickness table above. Directly
-   confirmed with a concrete example; this reverses a rule that was
-   previously (and reasonably) built from the call transcript.
-5. **18" never comes in Low Profile** — "18 is made in regular and 3\" but
-   not low profile." Now enforced as a hard availability constraint (see
-   Thickness table).
+1. **Custom cutout + one-sided question — dropped.** Custom cutouts aren't
+   offered by the quiz at all; the "is your pain on one side?" question is gone.
+2. **Low Profile firmness: bump UP** — reverses the July "no bump." Trudy
+   confirmed with a concrete example that the shorter foam needs to be a level
+   firmer to support the same weight. Capped at Firm; never over 200 lb.
+3. **Extra Cush min weight 150 → 170**, and it's driven by cushy preference (the
+   hard-firm-seat problem only exists at 170+). Firm-preference people only get
+   an Extra Cush *nudge* if they have hard-surface pain; unsure people get an
+   "offers both" nudge. PN alone doesn't trigger it. It's Extra Firm only.
+4. **Simple Soother eligibility broadened + gated** — central-only pain
+   (groin/genital/bladder/rectal; perineum & prostate excluded), no
+   condition implying wider pain (IC now compatible; prostatitis/vaginismus not),
+   duration not long-established. Firmness Medium <140 / Firm 140+ with a cusp
+   tiebreak. This is why the Soother now actually shows up.
+5. **18" kept in stock** — removed the always-on waitlist note. Squarespace's
+   native product-page "notify me" covers any future sell-out.
+6. **Sit-bones language corrected** — weight rests on the cushy buttocks, NOT
+   the sit bones (which sit just inside the channel, unloaded, so the pudendal
+   nerve isn't compressed). Fixed everywhere.
 
-## 8. Still open — awaiting Trudy
+Roadmap note (not built): Trudy wants a **2.5" Firm Extra Cush** eventually —
+only the 3" Extra Firm exists today, so that's all the quiz offers.
 
-1. **Custom-cutout history** — check the real inbox history (cya-inbox-research)
-   before permanently locking "never a first purchase."
-2. **Product-page consolidation** — fold Low Profile and 18" into the Twin
-   Cheeks page as variants (planned; the quiz's two order links — Twin Cheeks
-   and Simple Soother — assume this happens before launch). While doing it,
-   align variant names with quiz output: the quiz says "Extra Cush 3\"", the
-   shop dropdown says "Extra Firm Cushy 3\"" — pick one.
+## 8. Still open
+
+1. **Product-page consolidation** — fold Low Profile and 18" into the Twin
+   Cheeks page as variants (the quiz's two order links assume Twin Cheeks +
+   Simple Soother only). Align the variant name "Extra Firm Cushy 3\"" with the
+   quiz's "Extra Cush 3\"".
+2. **Product-page firmness copy** — make it agree with the quiz so a customer
+   never gets two different answers.
 3. **Phone number** — after launch, replace call/contact prompts on product
-   pages with the Find Your Fit quiz link; keep the number on the contact
-   page only.
+   pages with the quiz link; keep the number on the contact page only.

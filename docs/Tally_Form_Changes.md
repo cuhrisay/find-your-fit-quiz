@@ -1,40 +1,33 @@
-# Form / Airtable / Mailchimp changes to make (July 2026 revision)
+# Form / Airtable / Mailchimp changes to make
 
 The code in this repo already expects the new shape. These are the manual
-edits to make in each tool, in order. Nothing is client-facing until the quiz
-launches, so it's safe to do these live.
+edits to make in each tool. Nothing is client-facing until the quiz launches,
+so it's safe to do these live.
 
-## 1. Tally form
+## 1. Tally form (August 2026)
 
-1. **Pain question (Screen 3):** add the option **"Backs of my thighs /
-   hamstrings"** to "Where is the pain?" — position it right after Buttocks.
-2. **Delete three screens entirely:**
-   - "Any pain that gets worse on a hard seat?" (old Screen 6)
-   - "What have you already tried?" (old Screen 9)
-   - "Recently had surgery, an accident, or a procedure?" (old Screen 12)
-3. Check any Tally logic/jumps that referenced the deleted screens and remove
-   or re-point them.
-4. Leave everything else as-is (sex/age, country/state, free text, email all
-   stay).
+1. **Remove the "Is your pain on one side?" question** (you already did this).
+   Nothing in the code reads it anymore.
+2. That's the only structural change this round. The pain question already has
+   "Backs of my thighs / hamstrings", and the hard-seat / what-you've-tried /
+   recent-events screens were already removed in the prior round.
 
 ## 2. After editing — re-verify field IDs (required)
 
-Send yourself a test submission and open the webhook payload (or Tally's
-submission export):
+Send yourself a test submission and open the webhook payload (Tally →
+Integrations → Webhook → events log shows the exact JSON):
 
 - Confirm every `question_...` key in `lib/parseTally.js` `FIELD_MAP` still
-  matches (Tally usually keeps keys when you edit options, but verify).
-- Confirm the **exact option text** of the new thighs option matches the
-  string in `VALUE_MAPS.painLocations` (`'Backs of my thighs / hamstrings'`) —
-  the match is exact-text, punctuation and all.
-- The old TODO still stands: re-verify the **weight** question's field key and
-  bracket option texts against the live form (the code expects the 9-bracket
-  wording, e.g. "151–169 lbs" with an en-dash).
+  matches (Tally usually keeps keys when you edit a form, but verify — the
+  one-sided removal shouldn't shift the others, but check).
+- Confirm option texts still match `VALUE_MAPS` exactly (punctuation and all),
+  especially the weight brackets and the pain-location options.
 
 ## 3. Airtable
 
-Delete these columns from the `Submissions` table (the code no longer writes
-them): **Hard Seat Pain**, **What They've Tried**, **Recent Events**.
+The `One-Sided` column is no longer written (safe to delete, or leave it — it
+just won't populate on new rows). The earlier round already had you delete
+`Hard Seat Pain`, `What They've Tried`, and `Recent Events`.
 
 ## 4. Mailchimp
 
