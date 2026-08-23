@@ -139,6 +139,109 @@
   .error {
     color: #A61111;
   }
+  /* Matches the Mailchimp embed style used on the CYA blog (Poppins, uppercase
+     letter-spaced labels, off-white inputs, dark uppercase button) so this
+     feels like the same, recognizable email signup wherever it appears. */
+  .email-capture {
+    margin-top: 28px;
+    padding: 36px 40px 40px;
+    background: #f6f6f6;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    text-align: center;
+  }
+  .email-capture-logo {
+    margin: 0 0 24px;
+  }
+  .email-capture-logo img {
+    width: 160px;
+    height: auto;
+    display: inline-block;
+  }
+  .email-capture-heading {
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 20px;
+  }
+  .email-capture form {
+    max-width: 360px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .ec-field {
+    margin-bottom: 18px;
+  }
+  .ec-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 7px;
+  }
+  .email-capture input {
+    width: 100%;
+    font-size: 16px;
+    font-weight: 300;
+    padding: 13px 16px;
+    border: 1px solid #d0d0d0;
+    border-radius: 3px;
+    background: #fafafa;
+    color: #333;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .email-capture input:focus {
+    border-color: #999;
+    background: #fff;
+  }
+  .email-capture .clear {
+    text-align: center;
+    margin-top: 24px;
+  }
+  .email-capture button {
+    background: #2C2C2C;
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 200px;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .email-capture button:hover {
+    background: #444;
+  }
+  .email-capture button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .email-capture-note {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 300;
+    color: #333;
+    letter-spacing: 0.04em;
+    margin: 14px 0 0;
+  }
+  .email-capture-error {
+    text-align: center;
+    font-size: 13px;
+    color: #A61111;
+    margin: 10px 0 0;
+  }
+  .email-capture-success {
+    font-weight: 500;
+    margin: 0;
+  }
   .site-footer {
     max-width: 720px;
     width: 100%;
@@ -208,6 +311,7 @@
     // as a relative path if this page is served from the same domain as the
     // API functions (recommended - simplest setup).
     const RESULT_ENDPOINT = '/api/quiz-result';
+    const EMAIL_CAPTURE_ENDPOINT = '/api/quiz-capture-email';
 
     // Tally's redirect URL should be set to something like:
     //   https://yourdomain.vercel.app/results.html?id=@SubmissionID
@@ -253,7 +357,62 @@
         </div>
         <div class="message">${data.message}</div>
         <a class="cta" href="${r.orderUrl}">${r.orderLabel}</a>
+        <div class="email-capture" id="emailCapture">
+          <p class="email-capture-heading">Want your fit emailed to you? Get 10% off, too.</p>
+          <div class="email-capture-logo">
+            <img src="/assets/logo.webp" alt="Cushion Your Assets" />
+          </div>
+          <form id="emailCaptureForm">
+            <div class="ec-field">
+              <label for="captureFirstName">First Name</label>
+              <input type="text" id="captureFirstName" placeholder="Your first name" />
+            </div>
+            <div class="ec-field">
+              <label for="captureEmail">Email Address</label>
+              <input type="email" id="captureEmail" placeholder="your@email.com" required />
+            </div>
+            <div class="clear">
+              <button type="submit">Email Me My Results</button>
+            </div>
+            <p class="email-capture-note">By submitting, you agree to receive marketing emails from Cushion Your Assets. Unsubscribe anytime.</p>
+            <p class="email-capture-error" id="emailCaptureError"></p>
+          </form>
+        </div>
       `;
+      attachEmailCapture();
+    }
+
+    function attachEmailCapture() {
+      const form = document.getElementById('emailCaptureForm');
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('captureEmail').value.trim();
+        const firstName = document.getElementById('captureFirstName').value.trim();
+        const errorEl = document.getElementById('emailCaptureError');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        errorEl.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+        try {
+          const res = await fetch(EMAIL_CAPTURE_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ submissionId, email, firstName }),
+          });
+          const data = await res.json();
+          if (!res.ok || data.status !== 'ok') {
+            throw new Error(data.error || 'Something went wrong.');
+          }
+          document.getElementById('emailCapture').innerHTML =
+            '<p class="email-capture-success">Sent! Check your inbox for your results and your 10% off code.</p>';
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Email me my results';
+          errorEl.textContent =
+            "Something went wrong — please try again, or email us at support@cushionyourassets.com.";
+        }
+      });
     }
 
     function renderError(msg) {
@@ -276,7 +435,7 @@
           setTimeout(poll, 1500);
         } else {
           renderError(
-            "Something went wrong finding your result. We've also emailed a copy — check your inbox, or email us at support@cushionyourassets.com."
+            "Something went wrong finding your result. Please try the quiz again, or email us at support@cushionyourassets.com and we'll help."
           );
         }
       } catch (err) {
@@ -294,7 +453,7 @@
     setTimeout(() => {
       if (card.innerHTML.includes('Finding your fit')) {
         renderError(
-          "This is taking longer than expected. We've emailed your result — check your inbox, or reach out at support@cushionyourassets.com."
+          "This is taking longer than expected. Please refresh in a moment, or email us at support@cushionyourassets.com and we'll send your result directly."
         );
       }
     }, 30000);

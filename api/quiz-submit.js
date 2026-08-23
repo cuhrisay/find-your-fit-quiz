@@ -16,16 +16,16 @@
  *   5. Log everything to Airtable (airtable.js) - this doubles as the short-term
  *      "result lookup" store that api/quiz-result.js polls, AND the permanent
  *      data log described in Structure v5 §5.
- *   6. Push the result to Mailchimp (mailchimp.js) so the existing automation
- *      sends the email copy. Retried a couple times with backoff since, after
- *      the Airtable privacy split (August 2026), Mailchimp is the only place
- *      an email is ever connected to a recommendation - worth a bit of extra
- *      effort before giving up.
  *
- * Steps 3, 5, and 6 are logged-but-non-fatal: if Groq, Airtable, or Mailchimp
- * fail, the person still gets their result (the composed message just won't
- * include the free-text response paragraph if Groq failed). The one thing that
- * MUST succeed for a usable response is routing.
+ * No email is collected or sent from here (August 2026 - see README "Privacy
+ * design"). The quiz no longer asks for it at all; results.html offers an
+ * optional "email me my results + 10% off" step AFTER the result is shown,
+ * handled entirely by api/quiz-capture-email.js.
+ *
+ * Steps 3 and 5 are logged-but-non-fatal: if Groq or Airtable fail, the
+ * person still gets their result (the composed message just won't include
+ * the free-text response paragraph if Groq failed). The one thing that MUST
+ * succeed for a usable response is routing.
  */
 
 const crypto = require('crypto');
@@ -34,7 +34,6 @@ const { routeCushion } = require('../lib/routing');
 const { generateResultMessage } = require('../lib/groq');
 const { composeResultMessage, composeEmailSummary } = require('../lib/composeMessage');
 const { logSubmission } = require('../lib/airtable');
-const { pushToMailchimp } = require('../lib/mailchimp');
 
 /**
  * Verifies the Tally-Signature header against TALLY_SIGNING_SECRET, per
@@ -62,26 +61,6 @@ function isValidTallySignature(req) {
   const signatureBuf = Buffer.from(signature);
   if (expectedBuf.length !== signatureBuf.length) return false;
   return crypto.timingSafeEqual(expectedBuf, signatureBuf);
-}
-
-/**
- * Retries an async function with exponential backoff. Used only for the
- * Mailchimp push (see file header) - a transient outage or rate-limit no
- * longer silently drops the one place email connects to a recommendation.
- */
-async function withRetries(fn, attempts = 3, baseDelayMs = 500) {
-  let lastErr;
-  for (let i = 0; i < attempts; i++) {
-    try {
-      return await fn();
-    } catch (err) {
-      lastErr = err;
-      if (i < attempts - 1) {
-        await new Promise((resolve) => setTimeout(resolve, baseDelayMs * 2 ** i));
-      }
-    }
-  }
-  throw lastErr;
 }
 
 module.exports = async (req, res) => {
@@ -145,21 +124,13 @@ module.exports = async (req, res) => {
   const aiMessage = composeResultMessage(routedResult, answers, aiResult);
   const emailSummary = composeEmailSummary(routedResult, answers);
 
-  // Non-fatal: log failures but don't block the response. Airtable/the results
-  // page get the full aiMessage; Mailchimp gets the short emailSummary since
-  // its merge field caps out around 255 characters (see composeMessage.js).
+  // Non-fatal: log failures but don't block the response. emailSummary is
+  // stored now (not sent anywhere yet) so api/quiz-capture-email.js can hand
+  // it to Mailchimp later without re-deriving it from the raw answers.
   try {
-    await logSubmission(answers, routedResult, aiMessage, submissionId);
+    await logSubmission(answers, routedResult, aiMessage, emailSummary, submissionId);
   } catch (err) {
     console.error('Airtable logging failed (non-fatal):', err);
-  }
-
-  try {
-    if (answers.email) {
-      await withRetries(() => pushToMailchimp(answers, routedResult, emailSummary));
-    }
-  } catch (err) {
-    console.error('Mailchimp push failed after retries (non-fatal):', err);
   }
 
   res.status(200).json({

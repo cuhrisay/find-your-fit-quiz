@@ -1,7 +1,9 @@
 # CYA Find Your Fit — Vercel Function
 
 Everything that turns a Tally submission into a routed recommendation, a
-composed explanation, a logged data row, and an emailed result.
+composed explanation shown on the results page, and a logged data row. An
+emailed copy (with a 10% off code) is optional — offered on the results page
+after the person has already seen their result, not sent automatically.
 
 Built from `docs/CYA_Fit_Quiz_Structure_v5.md` (which lives in this repo now,
 specifically so it can't drift from the code the way v4 did) — if the routing
@@ -25,11 +27,24 @@ to hallucinate.
 ## Privacy design (August 2026)
 
 This quiz collects sexual/reproductive/pelvic health information, so identity
-and health data are deliberately kept apart:
+and health data are deliberately kept apart, and consent is sequenced to
+match what each piece of data actually needs:
 
+- **The Tally form never asks for email at all.** It's not a question in the
+  main flow, so `api/quiz-submit.js` never receives or handles it. A required
+  consent screen ("I agree to share this information...") sits right after
+  "Begin Quiz" — before any pain/diagnosis question — because sharing health
+  information is what needs consent *before* collection.
+- **Email is collected later, entirely separately, on the results page** —
+  after the person has already seen their result, as an opt-in "email me my
+  results + 10% off" step (`api/quiz-capture-email.js`). This is marketing
+  consent, not health-data consent, so a plain notice next to the submit
+  button ("you agree to receive marketing emails... unsubscribe anytime")
+  is enough — no checkbox needed for this part.
 - **Airtable never receives email or name.** The `Submissions` table is keyed
   only by the opaque Tally submission ID — see the privacy note at the top of
-  `lib/airtable.js`.
+  `lib/airtable.js`. `api/quiz-capture-email.js` looks the routed result up by
+  that ID; it never writes email back into Airtable.
 - **Mailchimp is the only place email connects to a recommendation** (product/
   firmness/size/thickness only — never the raw diagnoses, pain locations, or
   free text). That's what support uses to look someone up if they call in.
@@ -37,43 +52,47 @@ and health data are deliberately kept apart:
   answers and free text needed to write the one free-text response paragraph.
 
 Because Mailchimp is the sole record of that email↔recommendation link, its
-push is retried with backoff (`withRetries` in `api/quiz-submit.js`) rather
-than failing silently on the first transient error.
-
-There is currently no consent flow or privacy notice in front of the quiz —
-that's a gap, not a design choice, and should be closed before this handles
-real customer traffic at scale.
+push (`api/quiz-capture-email.js`) is retried with backoff (`lib/retry.js`)
+rather than failing silently on the first transient error.
 
 ## What's here
 
 ```
 api/
-  quiz-submit.js   POST - Tally webhook lands here. Does everything.
-  quiz-result.js   GET  - polled by results.html while quiz-submit.js finishes
+  quiz-submit.js        POST - Tally webhook lands here. Routes + composes + logs. No email.
+  quiz-result.js        GET  - polled by results.html while quiz-submit.js finishes
+  quiz-capture-email.js POST - optional, called from results.html AFTER the result is
+                         shown. The only place an email ever gets attached to a submission.
 lib/
   routing.js       The deterministic "brain" - picks the cushion. No AI here.
   routing.test.js  100+ tests against real scenarios. Run: npm test
   parseTally.js    Raw Tally payload -> normalized answers. NEEDS YOUR FIELD IDs.
   groq.js          Calls Groq ONLY to respond to the free-text box + classify distress.
   composeMessage.js Fixed templates for the whole result message. The only HTML emitter.
-  airtable.js      Logs every submission; also the lookup for quiz-result.js
+  airtable.js      Logs every submission; also the lookup for quiz-result.js and quiz-capture-email.js
   mailchimp.js     Pushes the result as merge fields so Mailchimp emails it
+  retry.js         Generic retry-with-backoff, used by quiz-capture-email.js's Mailchimp push
 public/
-  results.html     Where Tally redirects to. Polls until the result is ready.
+  results.html     Where Tally redirects to. Polls until the result is ready, then offers
+                    the optional "email me my results + 10% off" step.
 docs/
   CYA_Fit_Quiz_Structure_v5.md   The single source of truth for the quiz design.
   Tally_Form_Changes.md          Checklist of form/Airtable/Mailchimp edits to make.
   Email_Sequence_v2.md           Rewritten 3-email Mailchimp sequence copy.
 ```
 
-## Why two API endpoints instead of one
+## Why three API endpoints instead of one
 
 Tally's webhook is fire-and-forget — it doesn't wait for a response before
 redirecting the person. Since Groq takes a couple seconds, `results.html` polls
 `quiz-result.js` every 1.5s until `quiz-submit.js` has finished and logged the
-result to Airtable. This is what actually fulfills the promise on Screen 16
-("we'll show you your fit right now, and send a copy") — without it, the on-screen
-part silently wouldn't work and only the email would arrive.
+result to Airtable — without it, the on-screen result silently wouldn't render.
+
+`quiz-capture-email.js` is separate again because it fires at a completely
+different time (after the person has already seen their result and chosen to
+give an email) and needs different input (email/first name from a form on
+results.html, not a Tally payload) — it just looks the already-routed result
+back up by submission ID and hands it to Mailchimp.
 
 ## Setup checklist
 
@@ -82,13 +101,18 @@ part silently wouldn't work and only the email would arrive.
    `Tally Submission ID`, `Timestamp`, `Weight`, `Height`, `Pain Locations`,
    `Duration`, `Firm Preference`, `Diagnoses`,
    `Use Case`, `Needs More Space`, `Sex`,
-   `Age Range`, `Country`, `State/Region`, `Free Text`, `Routed Product`,
+   `Age Range`, `Free Text`, `Routed Product`,
    `Routed Firmness`, `Routed Size`, `Routed Thickness`, `Second Cushion`,
-   `AI Message`, `Consent Given`.
+   `AI Message`, `Email Summary`, `Consent Given`.
    (No longer written, safe to delete: `Hard Seat Pain`, `What They've Tried`,
-   `Recent Events`, `One-Sided`, `Email`, `First Name`. Email/First Name were
-   removed on purpose in the August 2026 privacy pass — see "Privacy design"
-   below.)
+   `Recent Events`, `One-Sided`, `Email`, `First Name`, `Country`,
+   `State/Region`. Email/First Name were removed in the August 2026 privacy
+   pass — see "Privacy design" below. Country/State were dropped the same
+   round — they were never actually wired into any Meta ads integration
+   (this codebase has none), so nothing live depended on them. `Email
+   Summary` is new: the short teaser stored at submit time so
+   `quiz-capture-email.js` can hand it to Mailchimp later without ever seeing
+   the raw answers.)
    Get a personal access token (read+write on this base) and the base ID for
    `.env.local`.
 
@@ -131,9 +155,13 @@ part silently wouldn't work and only the email would arrive.
 
 - `npm test` — routing logic only, no network calls needed.
 - Send a few real test submissions through Tally end-to-end and check: does the
-  result page render, did the row land in Airtable, did the Mailchimp email
-  arrive. Send one WITH free text and one WITHOUT — the without-free-text case
-  should never call Groq (check the Vercel function logs).
+  result page render, did the row land in Airtable. Send one WITH free text and
+  one WITHOUT — the without-free-text case should never call Groq (check the
+  Vercel function logs).
+- Separately, use the "email me my results" form on a real result page and
+  confirm the Mailchimp email actually arrives with the right product/firmness/
+  size/thickness and the 10% off code. This no longer happens automatically —
+  it's the one thing worth testing on its own since nothing else exercises it.
 - **Test the distress-handling path deliberately** (Structure v5 §6 — this is not
   optional). Groq classifies the free text into `distressTier` ("none" / "crisis" /
   "general_struggle") and only writes plain acknowledgment prose — the actual 988
@@ -165,8 +193,7 @@ part silently wouldn't work and only the email would arrive.
   (no new service), but means every result page load does an Airtable API call.
   Fine at CYA's volume; if this ever needs to be faster, a proper short-TTL
   cache (e.g. Vercel KV) would be the upgrade — not needed yet.
-- The privacy separation described in Structure v4 §6 (email kept separable from
-  the anonymous data) is only partially enforced by this code — email lives in
-  its own Airtable column, but nothing stops someone from pulling it into an
-  aggregate report. True separation is a process discipline on the Airtable side,
-  not something code alone can guarantee.
+- No rate limiting or bot protection on `quiz-capture-email.js` beyond basic
+  email-format validation — someone could hit it repeatedly with a guessed or
+  enumerated submission ID. Low stakes today (it only pushes a product name +
+  firmness to Mailchimp, no health data), but worth revisiting if abuse shows up.

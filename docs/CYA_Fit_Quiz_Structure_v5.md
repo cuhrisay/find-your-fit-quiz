@@ -33,35 +33,44 @@ An empty free-text box = no AI call at all. Fully deterministic result.
 
 Removed over the revisions: the standalone hard-seat-pain question (merged into
 pain locations), "what have you already tried" and "recent surgery/accident"
-(the duration question covers the routing), and the "is your pain on one side?"
-question (August 2026 — irrelevant now that custom cutouts aren't offered).
-Sex/age and country/state stay — skippable, low-friction, feed Meta-ads data.
+(the duration question covers the routing), the "is your pain on one side?"
+question (August 2026 — irrelevant now that custom cutouts aren't offered),
+and country/state/province (August 2026 — turned out to be collected for no
+live purpose; this codebase has no Meta ads integration for it to feed).
+Sex/age stays — skippable, low-friction, feeds Meta-ads data.
+
+**Email is no longer asked anywhere in this flow (August 2026).** The quiz
+submits and redirects to results.html right after the free-text screen; email
+is collected separately, afterward, on the results page itself — see §5 and
+the README's "Privacy design" section for why that split matters.
 
 - **Screen 0 — Welcome.** Title, one line of what to expect, start button.
-- **Screen 1 — How much do you weigh?** Nine brackets + "It's a gift / I don't
+- **Screen 1 — Consent.** "I agree to share this information with Cushion
+  Your Assets under the Privacy Policy below," required, unchecked by
+  default. Sits here specifically because it must come before any
+  health-related question, not just before submission (August 2026 privacy
+  pass — see README).
+- **Screen 2 — How much do you weigh?** Nine brackets + "It's a gift / I don't
   know their weight" (gift fork → gift-card page, before anything else).
-- **Screen 2 — How tall are you?** short / regular / tall.
-- **Screen 3 — Where is the pain?** (multi-select) Tailbone, Sit bones,
+- **Screen 3 — How tall are you?** short / regular / tall.
+- **Screen 4 — Where is the pain?** (multi-select) Tailbone, Sit bones,
   Rectal, Perineum, Genitals, Bladder/Urethra, Prostate, Hips, Buttocks,
   Backs of my thighs / hamstrings, Groin, Not sure/it changes. Drives product
   (central-only → Soother candidate) and the hard-surface signal (sit bones /
   hips / buttocks / thighs → Extra Cush candidate, never Low Profile).
-- **Screen 4 — How long has this been going on?** Gates the Soother (over 2 yr
+- **Screen 5 — How long has this been going on?** Gates the Soother (over 2 yr
   never; 6mo–2yr only if recovering) and drives the temporary framing.
-- **Screen 5 — Firmer or softer?** Firm / Soft / Depends-not sure. On-screen
-  break-in framing in Trudy's voice. (The old "one side?" question was removed
-  August 2026 — Trudy: irrelevant, and custom cutouts aren't offered.)
-- **Screen 6 — Diagnosis?** (multi-select, optional) Gates the Soother +
+- **Screen 6 — Firmer or softer?** Firm / Soft / Depends-not sure. On-screen
+  break-in framing in Trudy's voice.
+- **Screen 7 — Diagnosis?** (multi-select, optional) Gates the Soother +
   drives condition-specific result copy.
-- **Screen 7 — Where will you mainly use it?** (multi-select).
-- **Screen 8 — Do you find yourself needing a bigger seat / more space when
+- **Screen 8 — Where will you mainly use it?** (multi-select).
+- **Screen 9 — Do you find yourself needing a bigger seat / more space when
   you sit?** Drives 16"/18".
-- **Screen 9 — Sex + age range** (optional, one screen) [data/marketing].
-- **Screen 10 — Country, then state/region** [data/marketing].
+- **Screen 10 — Sex + age range** (optional, one screen) [data/marketing].
 - **Screen 11 — Anything else?** (free text, optional, prominent) — the box
   the AI reads. "Don't worry about being embarrassed — we've heard it all."
-- **Screen 12 — Where should we send your results?** First name optional,
-  email required. Redirects to results.html.
+  Quiz submits here and redirects to results.html.
 
 ## 3. Routing tables (rewritten August 2026 with Trudy's product-logic pass)
 
@@ -216,8 +225,11 @@ All structured answers + free text + routed result + composed message. No
 email or name — Airtable is keyed only by the opaque Tally submission ID
 (August 2026 privacy pass). Mailchimp is now the sole place an email connects
 to a recommendation. No-longer-written columns: Hard Seat Pain, What They've
-Tried, Recent Events, One-Sided, Email, First Name. Sex/age/country/state
-retained for Meta-ads stats.
+Tried, Recent Events, One-Sided, Email, First Name, Country, State/Region.
+Country/state were dropped the same round as email/name — turned out they
+were never wired into any Meta ads integration (there isn't one in this
+codebase), so nothing live depended on them. Sex/age retained for Meta-ads
+stats.
 
 The webhook itself (`api/quiz-submit.js`) verifies Tally's `Tally-Signature`
 header against `TALLY_SIGNING_SECRET` when that env var is set, so the
@@ -226,6 +238,16 @@ endpoint isn't open to arbitrary POSTs once configured.
 A required consent screen was added right after the welcome screen (before
 any health question) — "Consent Given" (yes/no) is logged per submission as
 proof the checkbox was checked, not just relied on as a UI-only gate.
+
+**Email capture moved to the results page (August 2026).** The quiz no longer
+asks for email at all - `quiz-submit.js` stores an `Email Summary` teaser
+(the same short text that used to go straight to Mailchimp) on every
+submission regardless of whether anyone ever gives an email. If they later
+use the "email me my results + 10% off" form on results.html,
+`api/quiz-capture-email.js` looks the record up by submission ID, reads that
+stored teaser back out, and pushes it to Mailchimp then - the first and only
+time identity connects to the recommendation for that person, and entirely
+their choice whether it happens at all.
 
 ## 6. Distress handling (not optional)
 Unchanged in substance. Groq classifies free text into none /

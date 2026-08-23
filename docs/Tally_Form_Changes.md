@@ -8,9 +8,17 @@ so it's safe to do these live.
 
 1. **Remove the "Is your pain on one side?" question** (you already did this).
    Nothing in the code reads it anymore.
-2. That's the only structural change this round. The pain question already has
-   "Backs of my thighs / hamstrings", and the hard-seat / what-you've-tried /
-   recent-events screens were already removed in the prior round.
+2. **Remove the email and first name questions** (previously Screen 13) —
+   done. Email is now an optional step on the results page ("email me my
+   results + 10% off") instead, handled by `api/quiz-capture-email.js`.
+3. **Remove the country/state/province questions** — done. They were never
+   actually wired into any Meta ads integration (this codebase has none), so
+   nothing live depended on them; `lib/parseTally.js` no longer reads them.
+4. The pain question already has "Backs of my thighs / hamstrings", and the
+   hard-seat / what-you've-tried / recent-events screens were already removed
+   in a prior round. The consent checkbox screen (right after "Begin Quiz",
+   before any health question) is already in place from the privacy pass —
+   no further change needed there.
 
 ## 2. After editing — re-verify field IDs (required)
 
@@ -32,6 +40,15 @@ just won't populate on new rows). The earlier round already had you delete
 As of the August 2026 privacy pass, `Email` and `First Name` are also no
 longer written — Airtable never receives identity now, only Mailchimp does.
 Safe to delete both columns whenever convenient.
+
+`Country` and `State/Region` are no longer written either (same round) —
+turned out they were never wired into any Meta ads integration, so nothing
+live depended on them. Safe to delete both columns too.
+
+Add a new column: `Email Summary` (long text). Written at submit time
+regardless of whether anyone ever gives an email — it's the short teaser
+`quiz-capture-email.js` reads back later to hand Mailchimp, so it doesn't
+need to reconstruct it from the raw answers after the fact.
 
 ## 4. Mailchimp
 
