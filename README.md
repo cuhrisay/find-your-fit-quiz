@@ -85,8 +85,15 @@ docs/
 
 Tally's webhook is fire-and-forget — it doesn't wait for a response before
 redirecting the person. Since Groq takes a couple seconds, `results.html` polls
-`quiz-result.js` every 1.5s until `quiz-submit.js` has finished and logged the
-result to Airtable — without it, the on-screen result silently wouldn't render.
+`quiz-result.js` every 1.5s until `quiz-submit.js` has finished and written the
+result — without it, the on-screen result silently wouldn't render.
+
+That poll reads from Vercel KV (`lib/resultCache.js`), not Airtable. Airtable
+meters API calls per month, and every poll from every open results page used
+to cost one — a handful of test submissions was enough to burn through the
+Free plan's monthly cap. `quiz-submit.js` now writes the finished result to
+both Airtable (permanent, privacy-safe record) and KV (fast, 10-minute cache)
+in parallel; only `quiz-result.js`'s polling moved off Airtable.
 
 `quiz-capture-email.js` is separate again because it fires at a completely
 different time (after the person has already seen their result and chosen to
@@ -116,7 +123,15 @@ back up by submission ID and hands it to Mailchimp.
    Get a personal access token (read+write on this base) and the base ID for
    `.env.local`.
 
-2. **Mailchimp** — create/choose an audience. Add merge fields (Audience ->
+2. **Vercel KV** — Vercel dashboard -> your project -> Storage -> Create
+   Database -> KV. Once connected to the project, Vercel auto-populates the
+   `KV_REST_API_URL` / `KV_REST_API_TOKEN` env vars — nothing to copy by hand.
+   For local dev, `vercel env pull .env.local` after creating it. This is the
+   fast, short-lived store `api/quiz-result.js` polls (see "Why three API
+   endpoints instead of one" above) — separate from Airtable so testing or
+   real traffic doesn't burn Airtable's metered API calls.
+
+3. **Mailchimp** — create/choose an audience. Add merge fields (Audience ->
    Settings -> Merge fields): `PRODUCT`, `FIRMNESS`, `SIZE`, `THICKNS` (10-char
    cap), `AIMSG`. Build an automation triggered by the `quiz-results` tag that
    sends the result email using those merge fields. Get your API key, server
@@ -128,23 +143,23 @@ back up by submission ID and hands it to Mailchimp.
    email) as **static content directly in the email template itself**, not
    through a merge field, since it's identical on every send anyway.
 
-3. **Groq** — free account at console.groq.com, generate an API key.
+4. **Groq** — free account at console.groq.com, generate an API key.
 
-4. **Fill in Tally field IDs** — open `lib/parseTally.js`, replace every
+5. **Fill in Tally field IDs** — open `lib/parseTally.js`, replace every
    `REPLACE_WITH_TALLY_FIELD_ID` with the real field ID from your built form
    (send yourself a test submission via the webhook, look at the payload, match
    each question's label to the right key).
 
-5. **Deploy to Vercel** — `vercel deploy`, or connect the GitHub repo in the
+6. **Deploy to Vercel** — `vercel deploy`, or connect the GitHub repo in the
    Vercel dashboard. Set all the env vars from `.env.example` in Vercel's project
    settings.
 
-6. **Point Tally at it** — Integrations -> Webhooks -> your deployed
+7. **Point Tally at it** — Integrations -> Webhooks -> your deployed
    `/api/quiz-submit` URL. Then Settings -> Redirect on Completion -> your
    deployed `/results.html?id=@SubmissionID` (use Tally's `@` menu to insert the
    actual submission ID token, don't type it literally).
 
-7. **Set a webhook signing secret** — on that same Tally webhook, generate a
+8. **Set a webhook signing secret** — on that same Tally webhook, generate a
    signing secret and put it in `TALLY_SIGNING_SECRET` (`.env.local` and
    Vercel's env vars). Without this, `api/quiz-submit.js` accepts a POST from
    anyone who finds the URL, not just Tally — see `.env.example`. Until this is

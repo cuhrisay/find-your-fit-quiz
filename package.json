@@ -8,5 +8,8 @@
   },
   "scripts": {
     "test": "node lib/routing.test.js"
+  },
+  "dependencies": {
+    "@vercel/kv": "^2.0.0"
   }
 }

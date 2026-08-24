@@ -11,11 +11,15 @@
  * ready yet?" every second or two until it is, instead of Tally trying to
  * render AI-generated content it doesn't have yet.
  *
+ * Reads from resultCache.js (Vercel KV), NOT Airtable - api/quiz-submit.js
+ * writes the finished result there specifically so this polling loop doesn't
+ * burn Airtable's metered API calls. Airtable still gets the permanent
+ * record; it's just never read by this endpoint. See resultCache.js.
+ *
  * Usage: GET /api/quiz-result?id=<tally submission id>
  */
 
-const { findSubmissionById } = require('../lib/airtable');
-const { getOrderLink, getProductDisplayName } = require('../lib/productLinks');
+const { getResult } = require('../lib/resultCache');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') {
@@ -29,36 +33,27 @@ module.exports = async (req, res) => {
     return;
   }
 
-  let record;
+  let cached;
   try {
-    record = await findSubmissionById(submissionId);
+    cached = await getResult(submissionId);
   } catch (err) {
     console.error('Result lookup failed:', err);
     res.status(500).json({ error: 'Could not look up this result.' });
     return;
   }
 
-  if (!record) {
-    // Not logged yet - still processing, or the webhook hasn't fired yet.
+  if (!cached) {
+    // Not written yet - still processing, or the webhook hasn't fired yet
+    // (also hit if the cache entry has aged out - see resultCache.js TTL).
     res.status(200).json({ status: 'pending' });
     return;
   }
 
-  const orderLink = getOrderLink(record['Routed Product']);
+  const { message, ...result } = cached;
 
   res.status(200).json({
     status: 'ready',
-    result: {
-      product: getProductDisplayName(record['Routed Product']),
-      firmness: record['Routed Firmness'],
-      size: record['Routed Size'],
-      thickness: record['Routed Thickness'],
-      secondCushion: record['Second Cushion']
-        ? JSON.parse(record['Second Cushion'])
-        : null,
-      orderUrl: orderLink.url,
-      orderLabel: orderLink.label,
-    },
-    message: record['AI Message'],
+    result,
+    message,
   });
 };

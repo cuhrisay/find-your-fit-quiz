@@ -13,19 +13,25 @@
  *      paragraph + distress classification (groq.js). Empty box -> no AI call
  *      at all; the message is fully deterministic.
  *   4. Compose the final message from fixed templates (composeMessage.js).
- *   5. Log everything to Airtable (airtable.js) - this doubles as the short-term
- *      "result lookup" store that api/quiz-result.js polls, AND the permanent
+ *   5. Log everything to Airtable (airtable.js) - the permanent, privacy-safe
  *      data log described in Structure v5 §5.
+ *   6. Write the finished result to resultCache.js (Vercel KV) - the fast,
+ *      short-lived store api/quiz-result.js actually polls. Kept separate
+ *      from Airtable so results.html's 1.5s polling loop doesn't burn
+ *      Airtable's metered API calls (see resultCache.js for why).
  *
  * No email is collected or sent from here (August 2026 - see README "Privacy
  * design"). The quiz no longer asks for it at all; results.html offers an
  * optional "email me my results + 10% off" step AFTER the result is shown,
  * handled entirely by api/quiz-capture-email.js.
  *
- * Steps 3 and 5 are logged-but-non-fatal: if Groq or Airtable fail, the
- * person still gets their result (the composed message just won't include
- * the free-text response paragraph if Groq failed). The one thing that MUST
- * succeed for a usable response is routing.
+ * Steps 3, 5, and 6 are logged-but-non-fatal: if Groq, Airtable, or the
+ * result cache fail, the person still gets their result in this same
+ * response (the composed message just won't include the free-text response
+ * paragraph if Groq failed). The one thing that MUST succeed for a usable
+ * response is routing. If step 6 fails, results.html's poll will time out
+ * even though this response carries the result fine - that only matters for
+ * people who reload the results page before the cache write lands.
  */
 
 const crypto = require('crypto');
@@ -34,6 +40,8 @@ const { routeCushion } = require('../lib/routing');
 const { generateResultMessage } = require('../lib/groq');
 const { composeResultMessage, composeEmailSummary } = require('../lib/composeMessage');
 const { logSubmission } = require('../lib/airtable');
+const { setResult } = require('../lib/resultCache');
+const { getOrderLink, getProductDisplayName } = require('../lib/productLinks');
 
 /**
  * Verifies the Tally-Signature header against TALLY_SIGNING_SECRET, per
@@ -131,6 +139,24 @@ module.exports = async (req, res) => {
     await logSubmission(answers, routedResult, aiMessage, emailSummary, submissionId);
   } catch (err) {
     console.error('Airtable logging failed (non-fatal):', err);
+  }
+
+  if (submissionId) {
+    const orderLink = getOrderLink(routedResult.product);
+    try {
+      await setResult(submissionId, {
+        product: getProductDisplayName(routedResult.product),
+        firmness: routedResult.firmness,
+        size: routedResult.size,
+        thickness: routedResult.thickness,
+        secondCushion: routedResult.secondCushion || null,
+        orderUrl: orderLink.url,
+        orderLabel: orderLink.label,
+        message: aiMessage,
+      });
+    } catch (err) {
+      console.error('Result cache write failed (non-fatal):', err);
+    }
   }
 
   res.status(200).json({
