@@ -322,6 +322,15 @@
 
     const card = document.getElementById('card');
 
+    // GA4 (G-M73Z65MCKT) attributes quiz-driven purchases via these params.
+    function withUtm(url) {
+      const u = new URL(url, window.location.href);
+      u.searchParams.set('utm_source', 'fit_quiz');
+      u.searchParams.set('utm_medium', 'quiz_result');
+      u.searchParams.set('utm_campaign', 'find_your_fit');
+      return u.toString();
+    }
+
     function renderResult(data) {
       const r = data.result;
       let secondCushionHtml = '';
@@ -356,7 +365,7 @@
           ${secondCushionHtml}
         </div>
         <div class="message">${data.message}</div>
-        <a class="cta" href="${r.orderUrl}">${r.orderLabel}</a>
+        <a class="cta" href="${withUtm(r.orderUrl)}">${r.orderLabel}</a>
         <div class="email-capture" id="emailCapture">
           <p class="email-capture-heading">Want your fit emailed to you? Get 10% off, too.</p>
           <div class="email-capture-logo">
