@@ -312,6 +312,7 @@
     // API functions (recommended - simplest setup).
     const RESULT_ENDPOINT = '/api/quiz-result';
     const EMAIL_CAPTURE_ENDPOINT = '/api/quiz-capture-email';
+    const ORDER_CLICK_ENDPOINT = '/api/quiz-order-click';
 
     // Tally's redirect URL should be set to something like:
     //   https://yourdomain.vercel.app/results.html?id=@SubmissionID
@@ -365,7 +366,7 @@
           ${secondCushionHtml}
         </div>
         <div class="message">${data.message}</div>
-        <a class="cta" href="${withUtm(r.orderUrl)}">${r.orderLabel}</a>
+        <a class="cta" id="orderCta" href="${withUtm(r.orderUrl)}">${r.orderLabel}</a>
         <div class="email-capture" id="emailCapture">
           <p class="email-capture-heading">Want your fit emailed to you? Get 10% off, too.</p>
           <div class="email-capture-logo">
@@ -389,6 +390,32 @@
         </div>
       `;
       attachEmailCapture();
+      attachOrderClickTracking();
+    }
+
+    // Logs Order-button clicks to Airtable. sendBeacon survives the page
+    // navigating away; the link itself is never delayed or blocked.
+    function attachOrderClickTracking() {
+      const cta = document.getElementById('orderCta');
+      if (!cta || !submissionId) return;
+      const track = () => {
+        const body = JSON.stringify({ submissionId });
+        try {
+          if (navigator.sendBeacon &&
+              navigator.sendBeacon(ORDER_CLICK_ENDPOINT, new Blob([body], { type: 'application/json' }))) {
+            return;
+          }
+        } catch (err) { /* fall through to fetch */ }
+        fetch(ORDER_CLICK_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+        }).catch(() => {});
+      };
+      cta.addEventListener('click', track);
+      // Middle-click / "open in new tab" doesn't fire 'click'.
+      cta.addEventListener('auxclick', (e) => { if (e.button === 1) track(); });
     }
 
     function attachEmailCapture() {

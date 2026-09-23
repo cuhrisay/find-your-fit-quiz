@@ -20,7 +20,7 @@
  * distinction matters here).
  */
 
-const { findSubmissionById } = require('../lib/airtable');
+const { findSubmissionById, recordEmailSubmitted } = require('../lib/airtable');
 const { pushToMailchimp } = require('../lib/mailchimp');
 const { withRetries } = require('../lib/retry');
 
@@ -72,6 +72,14 @@ module.exports = async (req, res) => {
     console.error('Mailchimp push failed after retries:', err);
     res.status(502).json({ error: 'Could not send your email right now. Please try again.' });
     return;
+  }
+
+  // Funnel tracking - timestamp only, never the address. Non-fatal: the
+  // person already got their email, so a logging hiccup shouldn't show an error.
+  try {
+    await recordEmailSubmitted(submissionId);
+  } catch (err) {
+    console.error('Email-submitted tracking failed (non-fatal):', err);
   }
 
   res.status(200).json({ status: 'ok' });

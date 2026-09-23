@@ -110,7 +110,10 @@ back up by submission ID and hands it to Mailchimp.
    `Use Case`, `Needs More Space`, `Sex`,
    `Age Range`, `Free Text`, `Routed Product`,
    `Routed Firmness`, `Routed Size`, `Routed Thickness`, `Second Cushion`,
-   `AI Message`, `Email Summary`, `Consent Given`.
+   `AI Message`, `Email Summary`, `Consent Given`, plus funnel tracking
+   (Sep 2026): `Order Clicked At` (date+time), `Order Clicks` (number),
+   `Email Submitted At` (date+time) - written by `api/quiz-order-click.js`
+   and `api/quiz-capture-email.js`; timestamps/counts only, never identity.
    (No longer written, safe to delete: `Hard Seat Pain`, `What They've Tried`,
    `Recent Events`, `One-Sided`, `Email`, `First Name`, `Country`,
    `State/Region`. Email/First Name were removed in the August 2026 privacy
